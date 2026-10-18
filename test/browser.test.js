@@ -123,6 +123,56 @@ const short = (ago) => { const d = new Date(); d.setDate(d.getDate() - ago); ret
     assert.strictEqual(await page.$eval('li[data-adid="1000000002"] .kpw-ma-note-text', n => n.textContent), '📝 Keller, Regal 2');
     assert.strictEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('kpw-anzeigen'))['1000000002'].note), 'Keller, Regal 2');
     assert.ok(!(await page.$$eval('.kpw-ma, .kpw-ma-sum', ns => ns.some(n => /null|undefined/.test(n.textContent)))), 'kein „null“ in der Anzeige');
+
+    step('Meine Anzeigen: „Bald Online“ ist kein Ladenhüter');
+    await page.evaluate(([d9]) => {
+        const ads = JSON.parse(localStorage.getItem('kpw-anzeigen'));
+        ads['1000000002'].hist = [[d9, 1034, 17]];
+        ads['1000000001'].note = 'Regal 3, EK 20 €';
+        localStorage.setItem('kpw-anzeigen', JSON.stringify(ads));
+    }, [day(9)]);
+    await open('/m-meine-anzeigen.html');
+    assert.deepStrictEqual(await page.$$eval('.kpw-ma-stale', ns => ns.map(n => n.closest('li[data-adid]').dataset.adid)), ['1000000003']);
+
+    // --- Verkaufsbuch
+    step('Verkaufsbuch: Verkauf an der Anzeige');
+    const card1 = 'li[data-adid="1000000001"]';
+    await page.click(`${card1} .kpw-vb button`);
+    const form = `${card1} .kpw-vb-form`;
+    assert.deepStrictEqual(await page.$$eval(`${form} input`, ns => ns.map(n => n.value)), ['80', day(0), '20', '']);
+    await page.fill(`${form} input >> nth=0`, '');
+    await page.click(`${form} button[type=submit]`);
+    assert.match(await page.$eval(`${form} .kpw-vb-error`, n => n.textContent), /Endpreis/);
+    await page.fill(`${form} input >> nth=0`, '75');
+    await page.selectOption(`${form} select >> nth=0`, 'kleinanzeigen');
+    await page.click(`${form} button[type=submit]`);
+    await page.waitForTimeout(100);
+    assert.strictEqual(await page.$eval(`${card1} .kpw-vb-sold`, n => n.textContent),
+        `✓ Verkauft am ${short(0)}${new Date().getFullYear()} für 75 € (Über Kleinanzeigen bezahlt, Abholung)`);
+    const sale = await page.evaluate(() => JSON.parse(localStorage.getItem('kpw-verkaeufe'))[0]);
+    assert.deepStrictEqual([sale.adId, sale.price, sale.ek, sale.pay, sale.date], ['1000000001', 75, 20, 'kleinanzeigen', day(0)]);
+    assert.match(sale.url, /^https:\/\/www\.kleinanzeigen\.de\/s-anzeige\/beispiel\/1000000001/);
+    assert.strictEqual(await page.$eval(`${card1} .kpw-vb-row:last-child button`, n => n.textContent), 'Noch eins verkauft …');
+
+    step('Verkaufsbuch: Übersicht und Verkauf ohne Anzeige');
+    await page.click('.kpw-vb-bar button');
+    const stats = () => page.$$eval('.kpw-book .kpw-stat b', ns => ns.map(n => n.textContent));
+    assert.deepStrictEqual(await stats(), ['1', '75 €', '55 €']);
+    assert.match(await page.$eval('.kpw-book .kpw-limit', n => n.textContent), /1 Verkauf, 75 €.*1 von 30 Verkäufen.*75 € von 2\.000 €/);
+    await page.click('.kpw-book .ks-action >> text=Verkauf ohne Anzeige');
+    await page.fill('.kpw-book .kpw-vb-form input >> nth=0', 'Bücherkiste');
+    await page.fill('.kpw-book .kpw-vb-form input >> nth=1', '12,50');
+    await page.keyboard.press('Escape');
+    assert.ok(await page.$('.kpw-book'), 'Esc im Formular lässt das Verkaufsbuch offen');
+    await page.click('.kpw-book .ks-action >> text=Verkauf ohne Anzeige');
+    await page.fill('.kpw-book .kpw-vb-form input >> nth=0', 'Bücherkiste');
+    await page.fill('.kpw-book .kpw-vb-form input >> nth=1', '12,50');
+    await page.click('.kpw-book .kpw-vb-form button[type=submit]');
+    assert.deepStrictEqual(await stats(), ['2', '87,50 €', '55 €']);
+    assert.strictEqual(await page.$$eval('.kpw-book tbody tr', rs => rs.length), 3); // 1 Monat + 2 Verkäufe
+    if (process.env.SHOT_BOOK) await page.screenshot({ path: process.env.SHOT_BOOK });
+    await page.keyboard.press('Escape');
+    assert.ok(!(await page.$('.kpw-book')), 'Esc schließt das Verkaufsbuch');
     if (process.env.SHOT) await page.screenshot({ path: process.env.SHOT, fullPage: true });
 
     assert.deepStrictEqual(errors, [], 'Fehler auf der Seite');

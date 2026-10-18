@@ -4,9 +4,9 @@
 
 # 📦 Kleinanzeigen – PowerSeller
 
-**Userscript für alle, die auf Kleinanzeigen.de viel verkaufen, privat oder mit PRO-Konto: Bausteine für Nachrichten und Anzeigentexte, eine Warnung vor typischen Betrugsmaschen und unter „Meine Anzeigen“ ein Verlauf der Besucher mit eigenen Notizen.**
+**Userscript für alle, die auf Kleinanzeigen.de viel verkaufen, privat oder mit PRO-Konto: Bausteine für Nachrichten und Anzeigentexte, eine Warnung vor typischen Betrugsmaschen, unter „Meine Anzeigen“ ein Verlauf der Besucher mit eigenen Notizen und ein Verkaufsbuch.**
 
-[![Version](https://img.shields.io/badge/version-0.2.0-blue?style=flat-square)](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/raw/main/powerseller.user.js)
+[![Version](https://img.shields.io/badge/version-0.3.0-blue?style=flat-square)](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/raw/main/powerseller.user.js)
 [![Plattform](https://img.shields.io/badge/plattform-Kleinanzeigen.de-green?style=flat-square)](https://www.kleinanzeigen.de)
 [![Userscript](https://img.shields.io/badge/Tampermonkey-Violentmonkey-black?style=flat-square&logo=tampermonkey)](#%EF%B8%8F-installation)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
@@ -19,7 +19,7 @@
 
 ---
 
-> **Vorabversion.** Bausteine und Betrugswarnung sind an der echten Nachrichtenseite getestet. „Meine Anzeigen“ und die Bausteine beim Einstellen bisher nur an gespeicherten Seiten (privates Konto). Rückmeldungen bitte als [Issue](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/issues).
+> **Vorabversion.** Bausteine und Betrugswarnung sind an der echten Nachrichtenseite getestet. „Meine Anzeigen“, Verkaufsbuch und die Bausteine beim Einstellen bisher nur an gespeicherten Seiten (privates Konto). Rückmeldungen bitte als [Issue](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/issues).
 
 Wer viel verkauft, schreibt jeden Tag dieselben Antworten: „Ja, ist noch da“, „Preis ist fest“, „Versand geht als DHL-Paket“. Dazu kommen Nachrichten, die nur so tun, als wollte jemand kaufen, und die Frage, welche Anzeige überhaupt noch jemand ansieht. **Der PowerSeller nimmt dir das Tippen ab, warnt dich vor den bekannten Maschen und merkt sich, wie sich deine Anzeigen entwickeln**, lokal in deinem Browser.
 
@@ -28,6 +28,7 @@ Wer viel verkauft, schreibt jeden Tag dieselben Antworten: „Ja, ist noch da“
 | 💬 **Bausteine** | Button „Bausteine“ über dem Nachrichtenfeld und über der Beschreibung beim Einstellen: eigene Texte mit Platzhaltern per Klick oder Taste 1 … 9 einfügen |
 | ⚠️ **Betrugswarnung** | Markiert Nachrichten mit nachgemachten Bezahl- oder Versandlinks, „Geld freigeben“, Kurier-Abholung, Fragen nach Kartendaten oder SMS-Codes, Überzahlung |
 | 📈 **Meine Anzeigen** | Verlauf von Besuchern und Merkern („+28 Besucher seit 17.10.“), Hinweis auf Ladenhüter, eigene Notiz pro Anzeige, Summen über der Liste, CSV-Export |
+| 📒 **Verkaufsbuch** | „Verkauft …“ an jeder Anzeige: Endpreis, Zahlungsart, Einkaufspreis. Summen pro Monat und Jahr, Gewinn, Stand zur Meldegrenze, CSV-Export |
 
 **Gedacht als Hilfe, nicht als Bot:** Das Script schickt nichts von selbst ab, stellt nichts ein und schiebt nichts hoch. Jede Aktion löst du mit einem Klick aus.
 
@@ -61,7 +62,16 @@ Die Warnung ist eine Hilfe, keine Garantie. Sie erkennt nicht jede Masche, und a
 * ➕ **Summen:** Über der Liste stehen Zahl der Anzeigen, Besucher (mit neuen seit dem letzten Stand), Merker und die Summe der Preise, jeweils für die aufgerufene Seite.
 * 📤 **Export:** Alle gemerkten Anzeigen mit letztem Stand und Notiz als CSV (in den Einstellungen), z. B. für Excel.
 
-Der Verlauf beginnt mit deinem ersten Aufruf. Was davor war, weiß das Script nicht. Ein Ablaufdatum zeigt „Meine Anzeigen“ nicht an, darum gibt es (noch) keinen Hinweis auf ablaufende Anzeigen.
+Der Verlauf beginnt mit deinem ersten Aufruf. Was davor war, weiß das Script nicht. Anzeigen, die noch „Bald Online“ sind, bekommen keinen Ladenhüter-Hinweis. Ein Ablaufdatum zeigt „Meine Anzeigen“ nicht an, darum gibt es (noch) keinen Hinweis auf ablaufende Anzeigen.
+
+## 📒 Verkaufsbuch
+
+* ✅ **Verkauft …:** An jeder Anzeige unter „Meine Anzeigen“. Endpreis (vorgeschlagen: der Anzeigenpreis), Datum, Zahlungsart (bar, über Kleinanzeigen, PayPal, Überweisung), Abholung oder Versand, optional Einkaufspreis und Notiz. Steht in der Notiz der Anzeige z. B. „EK 20 €“, wird der Einkaufspreis vorgeschlagen. Mehrere Stück aus einer Anzeige? Einfach „Noch eins verkauft …“.
+* 📊 **Übersicht:** Button **„📒 Verkaufsbuch“** über der Liste oder Tampermonkey-Menü → **„PowerSeller: Verkaufsbuch“**. Verkäufe, Umsatz und Gewinn pro Jahr, Tabelle nach Monaten, alle Verkäufe des Jahres. Verkäufe ohne Anzeige (z. B. schon gelöscht) lassen sich dort nachtragen.
+* 🧾 **Meldegrenze:** Plattformen melden Verkäufer ans Bundeszentralamt für Steuern, wenn sie in einem Jahr 30 Verkäufe oder mehr als 2.000 € erreichen (DAC7). Das Verkaufsbuch zeigt, wie weit deine eingetragenen Verkäufe „über Kleinanzeigen bezahlt“ davon entfernt sind. Kleinanzeigen zählt nach eigener Aussage nur Verkäufe über das eigene Bezahlsystem; maßgeblich ist die „Verkaufsübersicht“ in deinem Profil. Das ist ein Hinweis, **keine Steuerberatung**.
+* 📤 **Export:** Alle Verkäufe als CSV, z. B. für Excel oder die Buchhaltung.
+
+Das Verkaufsbuch kennt nur, was du einträgst. Es liegt nur in deinem Browser, darum ab und zu als CSV sichern.
 
 ---
 
@@ -84,7 +94,7 @@ Der Verlauf beginnt mit deinem ersten Aufruf. Was davor war, weiß das Script ni
 
 Updates holt sich Tampermonkey automatisch aus diesem Repo.
 
-**Einstellungen:** Tampermonkey-Menü → **„PowerSeller: Einstellungen“**, oder in der Auswahl der Bausteine auf **„Bearbeiten …“**.
+**Einstellungen:** Tampermonkey-Menü → **„PowerSeller: Einstellungen“**, oder in der Auswahl der Bausteine auf **„Bearbeiten …“**. Das Verkaufsbuch öffnet **„PowerSeller: Verkaufsbuch“**.
 
 Das Script läuft auf den Seiten unter `kleinanzeigen.de/m-…` (Nachrichten, Meine Anzeigen) und beim Aufgeben und Bearbeiten von Anzeigen (`/p-anzeige-aufgeben…`, `/p-anzeige-bearbeiten…`). Es verträgt sich mit dem [Superscript](https://github.com/RainbowLabsInc/Kleinanzeigen.de_Superscript), beide nutzen getrennte Speicher.
 
@@ -94,7 +104,8 @@ Das Script läuft auf den Seiten unter `kleinanzeigen.de/m-…` (Nachrichten, Me
 
 | Version | Inhalt |
 |---|---|
-| später | Verkaufsbuch mit Jahressummen, Notizen auch in den Nachrichten zeigen, Preis-Check gegen ähnliche Anzeigen, Hinweis auf ablaufende Anzeigen (sobald klar ist, wo Kleinanzeigen das Datum zeigt) |
+| 0.4 | **Interessenten in den Nachrichten:** Notiz und Status pro Unterhaltung, Warteliste pro Anzeige, Notiz der Anzeige im Chat |
+| später | Preis-Check gegen ähnliche Anzeigen, Hinweis auf ablaufende Anzeigen (sobald klar ist, wo Kleinanzeigen das Datum zeigt) |
 
 ---
 
@@ -116,9 +127,10 @@ node test/browser.test.js  # alle Module an nachgebauten Seiten (test/fixtures/)
 | `src/warnung.js` | Betrugswarnung: sucht die kleinsten Textblöcke der Seite und prüft sie |
 | `src/regeln.js` | Regeln der Betrugswarnung, reine Textprüfung, in Node testbar |
 | `src/anzeigen.js` | Meine Anzeigen: liest die Karten (`li[data-testid="ad-card"][data-adid]`), Selektoren im `CONFIG`-Block |
+| `src/verkaufsbuch.js` | Verkaufsbuch: Formular an den Karten, Übersicht als eigener Dialog |
 | `test/fixtures/` | Nachbauten echter Seiten mit Beispieldaten, ohne persönliche Daten |
 
-Gespeichert wird im Speicher des Userscript-Managers (`GM_setValue`): `kpw-bausteine`, `kpw-felder`, `kpw-warnung`, `kpw-anzeigen`, `kpw-anzeigen-settings`, `kpw-modules`. Höchstens 3.000 Anzeigen mit je 120 Tagesständen; die am längsten nicht mehr gesehenen ohne Notiz fallen zuerst heraus.
+Gespeichert wird im Speicher des Userscript-Managers (`GM_setValue`): `kpw-bausteine`, `kpw-felder`, `kpw-warnung`, `kpw-anzeigen`, `kpw-anzeigen-settings`, `kpw-verkaeufe`, `kpw-verkaufsbuch`, `kpw-modules`. Höchstens 3.000 Anzeigen mit je 120 Tagesständen; die am längsten nicht mehr gesehenen ohne Notiz fallen zuerst heraus.
 
 ## Lizenz
 

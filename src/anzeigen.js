@@ -98,7 +98,9 @@
             const t = text(li);
             if (/€|VB|verschenken/i.test(t) && t.length < 40) { price = t; break; }
         }
-        return { id, title: title.slice(0, 120), price, visitors, favorites, statsNode };
+        // „Bald Online“: noch nicht sichtbar, also kein Ladenhüter
+        const pending = /bald online/i.test(text(h3));
+        return { id, title: title.slice(0, 120), price, visitors, favorites, statsNode, pending };
     }
 
     // Stand von heute eintragen. Gibt true zurück, wenn sich etwas geändert hat.
@@ -135,7 +137,7 @@
             prev,
             dv: prev && info.visitors !== null ? info.visitors - prev[1] : null,
             df: prev && info.favorites !== null ? info.favorites - prev[2] : null,
-            stale: !!(old && info.visitors !== null && info.visitors === old[1]),
+            stale: !!(old && !info.pending && info.visitors !== null && info.visitors === old[1]),
             since: old ? old[0] : null,
         };
     }

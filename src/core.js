@@ -8,6 +8,7 @@
  *   - Bausteine ........... src/bausteine.js
  *   - Betrugswarnung ...... src/warnung.js (Regeln in src/regeln.js)
  *   - Meine Anzeigen ...... src/anzeigen.js
+ *   - Verkaufsbuch ........ src/verkaufsbuch.js
  *
  * Kern und Module sind wie beim Superscript aufgebaut (gleiche KS-Schnittstelle), damit die
  * Module später auch dort laufen können. Gespeichert wird unter eigenen Schlüsseln (kpw-…).
@@ -287,7 +288,7 @@
             GM_registerMenuCommand('PowerSeller: Einstellungen', openSettings);
         }
 
-        return { VERSION, isObj, load, save, onRemoteChange, el, setChildren, checkbox, radio, searchKey, module, addSettings, openSettings, ensureStyles };
+        return { VERSION, isObj, load, save, onRemoteChange, el, setChildren, checkbox, radio, searchKey, module, addSettings, openSettings, closeSettings, ensureStyles };
     })();
 
     // ------------------------------------------------------------------
