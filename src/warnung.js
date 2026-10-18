@@ -90,8 +90,11 @@
         .kpw-warn-head { display: flex; gap: 8px; align-items: baseline; font-weight: 700; }
         .kpw-warn-head span { flex: 1; }
         .kpw-warn-head button { border: 0; background: none; padding: 0; color: inherit; font: inherit; font-weight: 400; text-decoration: underline; cursor: pointer; }
-        .kpw-warn ul { margin: 4px 0 0; padding-left: 18px; }
+        .kpw-warn ul { margin: 4px 0 0; padding-left: 18px; list-style: disc; }
         .kpw-warn p { margin: 6px 0 0; }
+        /* Kleinanzeigen setzt eigene Größen für p, li und div: hier gleich groß halten */
+        .kpw-warn, .kpw-warn * { font-family: system-ui, sans-serif !important; font-size: 13px !important; line-height: 1.4 !important; }
+        .kpw-warn { max-width: 520px !important; }
     `);
 
     let state = new WeakMap();      // Block -> { text, badge }

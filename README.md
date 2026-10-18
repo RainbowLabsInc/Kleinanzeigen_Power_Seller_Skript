@@ -6,7 +6,7 @@
 
 **Userscript für alle, die auf Kleinanzeigen.de viel verkaufen, privat oder mit PRO-Konto: Antwort-Bausteine in den Nachrichten und eine Warnung vor typischen Betrugsmaschen.**
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue?style=flat-square)](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/raw/claude/brave-mayer-axxs0p/powerseller.user.js)
+[![Version](https://img.shields.io/badge/version-0.1.1-blue?style=flat-square)](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/raw/claude/brave-mayer-axxs0p/powerseller.user.js)
 [![Plattform](https://img.shields.io/badge/plattform-Kleinanzeigen.de-green?style=flat-square)](https://www.kleinanzeigen.de)
 [![Userscript](https://img.shields.io/badge/Tampermonkey-Violentmonkey-black?style=flat-square&logo=tampermonkey)](#%EF%B8%8F-installation)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
@@ -19,7 +19,7 @@
 
 ---
 
-> **Vorabversion 0.1.** Beide Module sind an einer nachgebauten Nachrichtenseite getestet, noch nicht an der echten Seite mit eingeloggtem Konto. Rückmeldungen bitte als [Issue](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/issues).
+> **Vorabversion 0.1.** Beide Module laufen auf der echten Nachrichtenseite (getestet mit Firefox und Tampermonkey). Rückmeldungen bitte als [Issue](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/issues).
 
 Wer viel verkauft, schreibt jeden Tag dieselben Antworten: „Ja, ist noch da“, „Preis ist fest“, „Versand geht als DHL-Paket“. Dazu kommen Nachrichten, die nur so tun, als wollte jemand kaufen. **Der PowerSeller nimmt dir das Tippen ab und warnt dich vor den bekannten Maschen**, lokal in deinem Browser.
 
