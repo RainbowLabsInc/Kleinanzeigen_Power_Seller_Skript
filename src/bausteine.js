@@ -1,9 +1,12 @@
 /*
- * Modul: Antwort-Bausteine
- * ------------------------
- * Sobald ein Nachrichtenfeld (Textfeld oder bearbeitbarer Bereich) den Fokus hat, sitzt
- * darüber ein kleiner Button „Bausteine“. Ein Klick zeigt die eigenen Antworten; ein Klick
- * auf eine davon (oder die Ziffer 1 … 9) fügt sie an der Schreibmarke ein.
+ * Modul: Bausteine
+ * ----------------
+ * Sobald ein Textfeld den Fokus hat (Nachricht oder Beschreibung beim Einstellen und
+ * Bearbeiten einer Anzeige), sitzt darüber ein kleiner Button „Bausteine“. Ein Klick zeigt
+ * die eigenen Texte für diese Seite; ein Klick auf einen davon (oder die Ziffer 1 … 9) fügt
+ * ihn an der Schreibmarke ein.
+ *
+ * - Jeder Baustein gilt für Nachrichten, für Anzeigentexte oder für beides.
  *
  * - Platzhalter in geschweiften Klammern, z. B. {Abholort}, werden durch die eigenen
  *   Angaben ersetzt. Fehlt eine Angabe, bleibt der Platzhalter stehen und ist markiert,
@@ -19,29 +22,34 @@
 
     const CONFIG = {
         keys: {
-            items: 'kpw-bausteine',     // [{ id, name, text }]
+            items: 'kpw-bausteine',     // [{ id, name, text, wo: 'nachricht' | 'anzeige' | 'beide' }]
             fields: 'kpw-felder',       // [{ key, value }]
+            version: 'kpw-bausteine-v', // 2: Beispiele für Anzeigentexte ergänzt
         },
+        version: 2,
         max: 60,
         nameMax: 40,
         textMax: 4000,
         fieldsMax: 20,
         // Beispiele beim ersten Start (und bei „Auf Beispiele zurücksetzen“)
         defaultItems: [
-            ['Noch da', 'Hallo, ja, der Artikel ist noch zu haben. Abholung in {Abholort} nach Absprache.'],
-            ['Preis fest', 'Hallo, danke für dein Interesse. Der Preis ist leider fest.'],
-            ['Versand', 'Versand ist möglich, als {Versand}. Die Versandkosten kommen zum Preis dazu.'],
-            ['Abholung', 'Gern. Wann würde es dir passen? Abholung in {Abholort}.'],
-            ['Reserviert', 'Der Artikel ist im Moment reserviert. Ich melde mich, falls er wieder frei wird.'],
-            ['Verkauft', 'Tut mir leid, der Artikel ist schon verkauft.'],
+            ['Noch da', 'Hallo, ja, der Artikel ist noch zu haben. Abholung in {Abholort} nach Absprache.', 'nachricht'],
+            ['Preis fest', 'Hallo, danke für dein Interesse. Der Preis ist leider fest.', 'nachricht'],
+            ['Versand', 'Versand ist möglich, als {Versand}. Die Versandkosten kommen zum Preis dazu.', 'nachricht'],
+            ['Abholung', 'Gern. Wann würde es dir passen? Abholung in {Abholort}.', 'nachricht'],
+            ['Reserviert', 'Der Artikel ist im Moment reserviert. Ich melde mich, falls er wieder frei wird.', 'nachricht'],
+            ['Verkauft', 'Tut mir leid, der Artikel ist schon verkauft.', 'nachricht'],
+            ['Privatverkauf', 'Privatverkauf, daher keine Garantie, Gewährleistung oder Rücknahme.', 'anzeige'],
+            ['Versand & Abholung', 'Abholung in {Abholort}. Versand als {Versand} gegen Aufpreis möglich.', 'anzeige'],
         ],
+        places: { nachricht: 'Nachrichten', anzeige: 'Anzeigentexte', beide: 'Beides' },
         defaultFields: [
             ['Abholort', ''],
             ['Versand', 'versichertes DHL-Paket'],
         ],
     };
 
-    const { el, load, save, isObj } = KS;
+    const { el, setChildren, load, save, isObj } = KS;
 
     // ------------------------------------------------------------------
     // Daten
@@ -50,7 +58,10 @@
     const newId = () => Math.random().toString(36).slice(2, 10);
     const str = (v, n) => (typeof v === 'string' ? v.slice(0, n) : '');
 
-    const defaultItems = () => CONFIG.defaultItems.map(([name, text]) => ({ id: newId(), name, text }));
+    const defaultItems = () => CONFIG.defaultItems.map(([name, text, wo]) => ({ id: newId(), name, text, wo }));
+
+    // Welche Bausteine hier passen: beim Einstellen und Bearbeiten Anzeigentexte, sonst Nachrichten
+    const KIND = window.location.pathname.startsWith('/p-anzeige-') ? 'anzeige' : 'nachricht';
     const defaultFields = () => CONFIG.defaultFields.map(([key, value]) => ({ key, value }));
 
     function cleanItems(raw) {
@@ -59,6 +70,7 @@
             id: typeof x.id === 'string' && x.id ? x.id : newId(),
             name: str(x.name, CONFIG.nameMax),
             text: str(x.text, CONFIG.textMax),
+            wo: Object.hasOwn(CONFIG.places, x.wo) ? x.wo : 'nachricht',
         }));
     }
 
@@ -72,10 +84,18 @@
 
     function loadItems() {
         const items = cleanItems(load(CONFIG.keys.items, null));
-        return items || defaultItems();
+        if (!items) return defaultItems();
+        // Gespeicherte Listen aus 0.1 einmalig um die Beispiele für Anzeigentexte ergänzen
+        if (load(CONFIG.keys.version, 1) < CONFIG.version) {
+            const names = new Set(items.map(x => x.name));
+            defaultItems().filter(x => x.wo === 'anzeige' && !names.has(x.name)).forEach(x => items.push(x));
+            save(CONFIG.keys.items, items.slice(0, CONFIG.max));
+            save(CONFIG.keys.version, CONFIG.version);
+        }
+        return items;
     }
     const loadFields = () => cleanFields(load(CONFIG.keys.fields, null)) || defaultFields();
-    const saveItems = (items) => save(CONFIG.keys.items, items);
+    const saveItems = (items) => { save(CONFIG.keys.items, items); save(CONFIG.keys.version, CONFIG.version); };
     const saveFields = (fields) => save(CONFIG.keys.fields, fields);
 
     // {Platzhalter} durch eigene Angaben ersetzen (Groß-/Kleinschreibung egal). Unbekannte
@@ -103,7 +123,9 @@
         if (field instanceof HTMLTextAreaElement) {
             const start = field.selectionStart ?? field.value.length;
             const before = field.value.slice(0, start);
-            const piece = (before && !/\s$/.test(before) ? ' ' : '') + text;
+            // Anzeigentexte als eigener Absatz, Nachrichten mit Leerzeichen anhängen
+            const sep = !before || /\s$/.test(before) ? '' : KIND === 'anzeige' ? '\n\n' : ' ';
+            const piece = sep + text;
             let ok = false;
             // insertText löst ein echtes input-Ereignis aus (wichtig für React-Felder) und
             // lässt sich mit Strg+Z rückgängig machen
@@ -156,9 +178,9 @@
 
     const btn = el('button', {
         type: 'button', className: 'kpw-bs-btn', 'data-kpw-ui': '', 'aria-haspopup': 'true', 'aria-expanded': 'false',
-        title: 'Antwort-Bausteine einfügen', textContent: 'Bausteine',
+        title: 'Bausteine einfügen', textContent: 'Bausteine',
     });
-    const pop = el('div', { className: 'kpw-bs-pop', 'data-kpw-ui': '', role: 'menu', 'aria-label': 'Antwort-Bausteine' });
+    const pop = el('div', { className: 'kpw-bs-pop', 'data-kpw-ui': '', role: 'menu', 'aria-label': 'Bausteine' });
 
     let field = null;       // aktuelles Nachrichtenfeld
     let open = false;
@@ -204,8 +226,8 @@
     }
 
     function openPop() {
-        items = loadItems().filter(x => x.text.trim());
-        pop.replaceChildren(
+        items = loadItems().filter(x => x.text.trim() && (x.wo === KIND || x.wo === 'beide'));
+        setChildren(pop,
             ...(items.length
                 ? items.map((x, i) => el('button', {
                     type: 'button', className: 'kpw-bs-item', role: 'menuitem', title: x.text,
@@ -214,7 +236,7 @@
                     el('span', { className: 'kpw-bs-key' }, i < 9 ? String(i + 1) : ''),
                     el('span', { className: 'kpw-bs-name' }, x.name || 'Ohne Namen'),
                     el('span', { className: 'kpw-bs-text' }, x.text)))
-                : [el('div', { className: 'kpw-bs-empty' }, 'Noch keine Bausteine.')]),
+                : [el('div', { className: 'kpw-bs-empty' }, KIND === 'anzeige' ? 'Noch keine Bausteine für Anzeigentexte.' : 'Noch keine Bausteine für Nachrichten.')]),
             el('div', { className: 'kpw-bs-foot' },
                 el('span', { style: 'color: #6b6b6b' }, items.length ? '1 … 9 zum Einfügen, Esc schließt' : ''),
                 el('button', { type: 'button', onclick: () => { closePop(); KS.openSettings(); } }, 'Bearbeiten …')));
@@ -350,6 +372,11 @@
                         placeholder: 'Name', 'aria-label': `Name von Baustein ${i + 1}`,
                         oninput: (e) => { x.name = e.target.value; persist(); },
                     }),
+                    el('select', {
+                        className: 'ks-input', style: 'width: auto', 'aria-label': `Wo Baustein ${i + 1} erscheint`,
+                        title: 'Wo der Baustein erscheint',
+                        onchange: (e) => { x.wo = e.target.value; persistNow(); },
+                    }, Object.entries(CONFIG.places).map(([v, t]) => el('option', { value: v, selected: x.wo === v }, t))),
                     iconBtn('Nach oben', '↑', () => move(list, i, -1), i === 0),
                     iconBtn('Nach unten', '↓', () => move(list, i, 1), i === list.length - 1),
                     iconBtn('Löschen', '🗑', () => {
@@ -382,15 +409,15 @@
                 onchange: (e) => { if (e.target.files[0]) importFile(e.target.files[0]); },
             });
 
-            box.replaceChildren(
-                el('h3', {}, 'Antwort-Bausteine'),
-                el('p', { className: 'ks-hint' }, 'Erscheinen über dem Nachrichtenfeld unter „Bausteine“. '
+            setChildren(box,
+                el('h3', {}, 'Bausteine'),
+                el('p', { className: 'ks-hint' }, 'Erscheinen über dem Nachrichtenfeld und über der Beschreibung beim Einstellen einer Anzeige unter „Bausteine“. '
                     + 'Platzhalter wie {Abholort} werden durch deine Angaben unten ersetzt. Fehlt eine Angabe, bleibt der Platzhalter stehen und ist markiert.'),
                 ...rows,
                 el('div', { className: 'ks-row' },
                     el('button', {
                         type: 'button', className: 'ks-action', disabled: list.length >= CONFIG.max,
-                        onclick: () => { list.push({ id: newId(), name: '', text: '' }); persistNow(); render(); [...box.querySelectorAll('.ks-module input')].pop()?.focus(); },
+                        onclick: () => { list.push({ id: newId(), name: '', text: '', wo: KIND }); persistNow(); render(); [...box.querySelectorAll('.ks-module input')].pop()?.focus(); },
                     }, '+ Neuer Baustein'),
                     el('span', { className: 'ks-spacer' }),
                     el('button', { type: 'button', className: 'ks-action', onclick: () => download('powerseller-bausteine.json', { bausteine: list, felder: fields }) }, 'Exportieren'),

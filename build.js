@@ -15,7 +15,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION = '0.1.1';
+const VERSION = '0.2.0';
 const OUT = 'powerseller.user.js';
 const REPO = 'https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript';
 
@@ -26,14 +26,20 @@ const MODULES = [
     {
         id: 'bausteine',
         file: 'src/bausteine.js',
-        label: 'Antwort-Bausteine',
-        description: 'Button „Bausteine“ am Nachrichtenfeld: fertige Antworten mit Platzhaltern per Klick einfügen.',
+        label: 'Bausteine',
+        description: 'Button „Bausteine“ am Nachrichtenfeld und an der Beschreibung beim Einstellen: eigene Texte mit Platzhaltern per Klick einfügen.',
     },
     {
         id: 'warnung',
         file: 'src/warnung.js',
         label: 'Betrugswarnung',
         description: 'Markiert Nachrichten mit typischen Maschen: falsche Bezahl- und Versandlinks, „Geld freigeben“, Kurier, Codes, Überzahlung.',
+    },
+    {
+        id: 'anzeigen',
+        file: 'src/anzeigen.js',
+        label: 'Meine Anzeigen',
+        description: 'Verlauf von Besuchern und Merkern, Hinweis auf Ladenhüter, eigene Notiz pro Anzeige, Summen über der Liste.',
     },
 ];
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          Kleinanzeigen - PowerSeller
 // @namespace     @@REPO@@
-// @description   Hilfen für Vielverkäufer auf Kleinanzeigen.de, privat und PRO: Antwort-Bausteine in den Nachrichten und eine Warnung vor typischen Betrugsmaschen. Alles lokal, jedes Modul einzeln abschaltbar.
+// @description   Hilfen für Vielverkäufer auf Kleinanzeigen.de, privat und PRO: Bausteine für Nachrichten und Anzeigentexte, Warnung vor typischen Betrugsmaschen, Besucher-Verlauf und Notizen unter „Meine Anzeigen“. Alles lokal, jedes Modul einzeln abschaltbar.
 // @author        RainbowlabsInc
 // @copyright     2026, RainbowlabsInc
 // @license       MIT
@@ -11,6 +11,8 @@
 // @updateURL     @@REPO@@/raw/main/powerseller.user.js
 // @downloadURL   @@REPO@@/raw/main/powerseller.user.js
 // @match         https://www.kleinanzeigen.de/m-*
+// @match         https://www.kleinanzeigen.de/p-anzeige-aufgeben*
+// @match         https://www.kleinanzeigen.de/p-anzeige-bearbeiten*
 // @grant         GM_getValue
 // @grant         GM_setValue
 // @grant         GM_addValueChangeListener

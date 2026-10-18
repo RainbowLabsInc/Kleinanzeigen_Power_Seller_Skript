@@ -5,8 +5,9 @@
  * lässt sich einzeln abschalten (Tampermonkey-Menü → „PowerSeller: Einstellungen“).
  *
  * Module:
- *   - Antwort-Bausteine ... src/bausteine.js
+ *   - Bausteine ........... src/bausteine.js
  *   - Betrugswarnung ...... src/warnung.js (Regeln in src/regeln.js)
+ *   - Meine Anzeigen ...... src/anzeigen.js
  *
  * Kern und Module sind wie beim Superscript aufgebaut (gleiche KS-Schnittstelle), damit die
  * Module später auch dort laufen können. Gespeichert wird unter eigenen Schlüsseln (kpw-…).
@@ -20,7 +21,8 @@
 
     const VERSION = '@@VERSION@@';
 
-    // Läuft auf den Seiten unter /m-… (Nachrichten, Meine Anzeigen; siehe @match).
+    // Läuft auf den Seiten unter /m-… (Nachrichten, Meine Anzeigen) und beim Einstellen und
+    // Bearbeiten von Anzeigen (siehe @match).
     // Nur auf kleinanzeigen.de laufen – zusätzlich zu @match, falls der Script-Manager
     // die Header ignoriert oder das Script manuell mit breiteren Regeln eingebunden wird.
     if (window.location.protocol !== 'https:' || window.location.hostname !== 'www.kleinanzeigen.de') return;
@@ -88,6 +90,12 @@
                 else node.setAttribute(k, v === true ? '' : v);
             }
             children.flat().forEach(c => c != null && c !== false && node.append(c));
+            return node;
+        }
+
+        // Wie replaceChildren, lässt aber null/false weg (replaceChildren schriebe „null“)
+        function setChildren(node, ...children) {
+            node.replaceChildren(...children.flat().filter(c => c != null && c !== false));
             return node;
         }
 
@@ -162,7 +170,7 @@
                 box-shadow: 0 12px 32px rgba(0,0,0,.22); font: inherit; font-size: 14px; line-height: 1.4; text-align: left;
             }
             .ks-panel *, .ks-panel *::before, .ks-panel *::after { box-sizing: border-box; }
-            .ks-panel button, .ks-panel input, .ks-panel textarea { font: inherit; font-size: 14px; color: inherit; }
+            .ks-panel button, .ks-panel input, .ks-panel textarea, .ks-panel select { font: inherit; font-size: 14px; color: inherit; }
             .ks-input {
                 width: 100%; padding: 6px 8px; border: 1px solid #c9c7c2; border-radius: 6px; background: #fff;
             }
@@ -279,7 +287,7 @@
             GM_registerMenuCommand('PowerSeller: Einstellungen', openSettings);
         }
 
-        return { VERSION, isObj, load, save, onRemoteChange, el, checkbox, radio, searchKey, module, addSettings, openSettings, ensureStyles };
+        return { VERSION, isObj, load, save, onRemoteChange, el, setChildren, checkbox, radio, searchKey, module, addSettings, openSettings, ensureStyles };
     })();
 
     // ------------------------------------------------------------------
