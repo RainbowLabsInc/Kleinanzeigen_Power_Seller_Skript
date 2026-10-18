@@ -6,12 +6,14 @@
 
 **Userscript für alle, die auf Kleinanzeigen.de viel verkaufen, privat oder mit PRO-Konto: Antwort-Bausteine in den Nachrichten und eine Warnung vor typischen Betrugsmaschen.**
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue?style=flat-square)](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/raw/main/powerseller.user.js)
+[![Version](https://img.shields.io/badge/version-0.1.0-blue?style=flat-square)](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/raw/claude/brave-mayer-axxs0p/powerseller.user.js)
 [![Plattform](https://img.shields.io/badge/plattform-Kleinanzeigen.de-green?style=flat-square)](https://www.kleinanzeigen.de)
 [![Userscript](https://img.shields.io/badge/Tampermonkey-Violentmonkey-black?style=flat-square&logo=tampermonkey)](#%EF%B8%8F-installation)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 
 *Chrome · Firefox · Edge · Kein eigener Server · Kein Tracking · Jedes Modul einzeln abschaltbar*
+
+<a href="https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/raw/claude/brave-mayer-axxs0p/powerseller.user.js"><img src="assets/installieren.svg" alt="Installieren: PowerSeller (Tampermonkey)" width="320" height="60"></a>
 
 </div>
 
@@ -62,7 +64,13 @@ Die Warnung ist eine Hilfe, keine Garantie. Sie erkennt nicht jede Masche, und a
 
 > **Chrome/Edge:** Bei neueren Tampermonkey-Versionen muss in den Erweiterungs-Details „Benutzerskripte zulassen“ bzw. der Entwicklermodus aktiviert sein.
 
-**Schritt 2: PowerSeller installieren:** [`powerseller.user.js`](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/raw/main/powerseller.user.js) öffnen, Tampermonkey bietet die Installation an.
+**Schritt 2: PowerSeller installieren**
+
+<a href="https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/raw/claude/brave-mayer-axxs0p/powerseller.user.js"><img src="assets/installieren.svg" alt="Installieren: PowerSeller (Tampermonkey)" width="320" height="60"></a>
+
+*(Alternativ: Inhalt von `powerseller.user.js` kopieren und in Tampermonkey als neues Skript einfügen.)*
+
+> Die Vorabversion kommt vom Test-Branch. Updates holt sich Tampermonkey aus `main`, sobald es den Branch gibt.
 
 **Einstellungen:** Tampermonkey-Menü → **„PowerSeller: Einstellungen“**, oder in der Auswahl der Bausteine auf **„Bearbeiten …“**.
 
