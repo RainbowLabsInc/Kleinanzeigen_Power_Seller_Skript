@@ -19,7 +19,7 @@
 
 ---
 
-> **Vorabversion 0.1.** Beide Module laufen auf der echten Nachrichtenseite (getestet mit Firefox und Tampermonkey). Rückmeldungen bitte als [Issue](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/issues).
+> **Vorabversion 0.1.** Beide Module sind an der echten Nachrichtenseite getestet. Rückmeldungen bitte als [Issue](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/issues).
 
 Wer viel verkauft, schreibt jeden Tag dieselben Antworten: „Ja, ist noch da“, „Preis ist fest“, „Versand geht als DHL-Paket“. Dazu kommen Nachrichten, die nur so tun, als wollte jemand kaufen. **Der PowerSeller nimmt dir das Tippen ab und warnt dich vor den bekannten Maschen**, lokal in deinem Browser.
 
