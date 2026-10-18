@@ -5,7 +5,7 @@
 // @author        RainbowlabsInc
 // @copyright     2026, RainbowlabsInc
 // @license       MIT
-// @version       0.3.0
+// @version       0.3.1
 // @icon          https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/raw/main/assets/icon48.png
 // @homepage      https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript
 // @updateURL     https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/raw/main/powerseller.user.js
@@ -43,7 +43,7 @@
 (function () {
     'use strict';
 
-    const VERSION = '0.3.0';
+    const VERSION = '0.3.1';
 
     // Läuft auf den Seiten unter /m-… (Nachrichten, Meine Anzeigen) und beim Einstellen und
     // Bearbeiten von Anzeigen (siehe @match).
@@ -237,6 +237,23 @@
         `;
         const ensureStyles = () => { if (!styleEl.isConnected) (document.head || docRoot).appendChild(styleEl); };
 
+        // --- Darstellung: „rainbow“ (Akzente im Regenbogen wie der Install-Button) oder „standard“.
+        // Die Module schreiben ihre Akzente als :root[data-kpw-theme="rainbow"] … und nutzen
+        // die Verläufe --kpw-rainbow (waagerecht) und --kpw-rainbow-v (senkrecht).
+
+        const THEME_KEY = 'kpw-theme';
+        const THEMES = { rainbow: 'Regenbogen', standard: 'Standard' };
+        const theme = () => { const t = load(THEME_KEY, 'rainbow'); return Object.hasOwn(THEMES, t) ? t : 'rainbow'; };
+        const applyTheme = () => docRoot.setAttribute('data-kpw-theme', theme());
+        applyTheme();
+        onRemoteChange(THEME_KEY, applyTheme);
+        const colors = '#e53935, #fb8c00, #fdd835, #43a047, #1e88e5, #8e24aa';
+        const themeStyle = el('style', { 'data-kpw-ui': '' }, `
+            :root { --kpw-rainbow: linear-gradient(90deg, ${colors}); --kpw-rainbow-v: linear-gradient(180deg, ${colors}); }
+            :root[data-kpw-theme="rainbow"] .ks-panel .ks-head { background: var(--kpw-rainbow) bottom / 100% 3px no-repeat, #fff; }
+        `);
+        (document.head || docRoot).appendChild(themeStyle);
+
         // --- Einstellungen (Dialog)
 
         let panel = null; // { overlay, box, changed, cleanup }
@@ -301,6 +318,14 @@
                         panel.changed ? el('div', { className: 'ks-note ks-row', dataset: { kind: 'ok' } },
                             el('span', { className: 'ks-spacer' }, 'Gilt nach dem Neuladen der Seite.'),
                             el('button', { type: 'button', className: 'ks-action', onclick: () => window.location.reload() }, 'Seite neu laden')) : null),
+                    el('section', { className: 'ks-section' },
+                        el('h3', {}, 'Darstellung'),
+                        el('div', { className: 'ks-row' }, Object.entries(THEMES).map(([id, label]) => radio('kpw-theme', label, theme() === id, () => {
+                            save(THEME_KEY, id);
+                            applyTheme();
+                        }))),
+                        el('p', { className: 'ks-hint' }, 'Regenbogen: Buttons, Boxen und Dialoge des PowerSellers mit farbigem Rand, damit man sie von Kleinanzeigen unterscheidet. '
+                            + 'Warnungen bleiben rot und gelb.')),
                     moduleSections,
                     el('p', { className: 'ks-hint' }, `PowerSeller ${VERSION} · Alles wird nur lokal in deinem Browser gespeichert · `,
                         el('a', { href: 'https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript', target: '_blank', rel: 'noopener' }, 'Projektseite'))));
@@ -431,7 +456,7 @@ const KPW_REGELN = (() => {
 // ========================================================================
 // Modul „Bausteine“: src/bausteine.js
 // ========================================================================
-KS.module("bausteine", {"label":"Bausteine","version":"0.3.0","description":"Button „Bausteine“ am Nachrichtenfeld und an der Beschreibung beim Einstellen: eigene Texte mit Platzhaltern per Klick einfügen."}, function () {
+KS.module("bausteine", {"label":"Bausteine","version":"0.3.1","description":"Button „Bausteine“ am Nachrichtenfeld und an der Beschreibung beim Einstellen: eigene Texte mit Platzhaltern per Klick einfügen."}, function () {
 /*
  * Modul: Bausteine
  * ----------------
@@ -608,6 +633,14 @@ KS.module("bausteine", {"label":"Bausteine","version":"0.3.0","description":"But
         .kpw-bs-foot { display: flex; justify-content: space-between; gap: 8px; padding: 6px 8px 2px; border-top: 1px solid #eceae6; margin-top: 4px; }
         .kpw-bs-foot button { border: 0; background: none; padding: 0; color: #1e1e1e; font: inherit; text-decoration: underline; cursor: pointer; }
         .kpw-bs-empty { padding: 6px 8px; color: #6b6b6b; }
+        :root[data-kpw-theme="rainbow"] .kpw-bs-btn {
+            border: 2px solid transparent; color: #fff;
+            background: linear-gradient(#141418, #141418) padding-box, var(--kpw-rainbow) border-box;
+        }
+        :root[data-kpw-theme="rainbow"] .kpw-bs-btn:hover, :root[data-kpw-theme="rainbow"] .kpw-bs-btn[aria-expanded="true"] {
+            background: linear-gradient(#2a2a30, #2a2a30) padding-box, var(--kpw-rainbow) border-box;
+        }
+        :root[data-kpw-theme="rainbow"] .kpw-bs-pop { padding-top: 9px; background: var(--kpw-rainbow) top / 100% 3px no-repeat, #fff; }
     `);
 
     const btn = el('button', {
@@ -889,7 +922,7 @@ KS.module("bausteine", {"label":"Bausteine","version":"0.3.0","description":"But
 // ========================================================================
 // Modul „Betrugswarnung“: src/warnung.js
 // ========================================================================
-KS.module("warnung", {"label":"Betrugswarnung","version":"0.3.0","description":"Markiert Nachrichten mit typischen Maschen: falsche Bezahl- und Versandlinks, „Geld freigeben“, Kurier, Codes, Überzahlung."}, function () {
+KS.module("warnung", {"label":"Betrugswarnung","version":"0.3.1","description":"Markiert Nachrichten mit typischen Maschen: falsche Bezahl- und Versandlinks, „Geld freigeben“, Kurier, Codes, Überzahlung."}, function () {
 /*
  * Modul: Betrugswarnung
  * ---------------------
@@ -1084,7 +1117,7 @@ KS.module("warnung", {"label":"Betrugswarnung","version":"0.3.0","description":"
 // ========================================================================
 // Modul „Meine Anzeigen“: src/anzeigen.js
 // ========================================================================
-KS.module("anzeigen", {"label":"Meine Anzeigen","version":"0.3.0","description":"Verlauf von Besuchern und Merkern, Hinweis auf Ladenhüter, eigene Notiz pro Anzeige, Summen über der Liste."}, function () {
+KS.module("anzeigen", {"label":"Meine Anzeigen","version":"0.3.1","description":"Verlauf von Besuchern und Merkern, Hinweis auf Ladenhüter, eigene Notiz pro Anzeige, Summen über der Liste."}, function () {
 /*
  * Modul: Meine Anzeigen
  * ---------------------
@@ -1264,6 +1297,11 @@ KS.module("anzeigen", {"label":"Meine Anzeigen","version":"0.3.0","description":
         }
         .kpw-ma-sum b { font-weight: 700; }
         .kpw-ma, .kpw-ma *, .kpw-ma-sum, .kpw-ma-sum * { font-family: system-ui, sans-serif !important; }
+        :root[data-kpw-theme="rainbow"] .kpw-ma { padding-left: 10px; background: var(--kpw-rainbow-v) left / 3px 100% no-repeat; }
+        :root[data-kpw-theme="rainbow"] .kpw-ma-sum {
+            border: 2px solid transparent;
+            background: linear-gradient(#f7f6f3, #f7f6f3) padding-box, var(--kpw-rainbow) border-box;
+        }
     `);
 
     const openHist = new Set();     // Anzeigen mit aufgeklapptem Verlauf
@@ -1453,7 +1491,7 @@ KS.module("anzeigen", {"label":"Meine Anzeigen","version":"0.3.0","description":
 // ========================================================================
 // Modul „Verkaufsbuch“: src/verkaufsbuch.js
 // ========================================================================
-KS.module("verkaufsbuch", {"label":"Verkaufsbuch","version":"0.3.0","description":"„Verkauft …“ an jeder Anzeige: Endpreis, Zahlungsart, Einkaufspreis festhalten. Summen pro Monat und Jahr, Meldegrenze, CSV-Export."}, function () {
+KS.module("verkaufsbuch", {"label":"Verkaufsbuch","version":"0.3.1","description":"„Verkauft …“ an jeder Anzeige: Endpreis, Zahlungsart, Einkaufspreis festhalten. Summen pro Monat und Jahr, Meldegrenze, CSV-Export."}, function () {
 /*
  * Modul: Verkaufsbuch
  * -------------------
@@ -1629,6 +1667,15 @@ KS.module("verkaufsbuch", {"label":"Verkaufsbuch","version":"0.3.0","description
         .kpw-book .kpw-meter { height: 6px; border-radius: 3px; background: rgba(0,0,0,.1); overflow: hidden; }
         .kpw-book .kpw-meter span { display: block; height: 100%; background: currentColor; }
         .kpw-book select.ks-input { width: auto; }
+        :root[data-kpw-theme="rainbow"] .kpw-vb { padding-left: 10px; background: var(--kpw-rainbow-v) left / 3px 100% no-repeat; }
+        :root[data-kpw-theme="rainbow"] .kpw-vb-bar button {
+            border: 2px solid transparent; color: #fff;
+            background: linear-gradient(#141418, #141418) padding-box, var(--kpw-rainbow) border-box;
+        }
+        :root[data-kpw-theme="rainbow"] .kpw-vb-bar button:hover { background: linear-gradient(#2a2a30, #2a2a30) padding-box, var(--kpw-rainbow) border-box; }
+        :root[data-kpw-theme="rainbow"] .kpw-vb-form .kpw-vb-actions button[data-primary] {
+            border: 2px solid transparent; background: linear-gradient(#141418, #141418) padding-box, var(--kpw-rainbow) border-box;
+        }
     `);
     const ensureStyle = () => { if (!style.isConnected) (document.head || document.documentElement).appendChild(style); };
 

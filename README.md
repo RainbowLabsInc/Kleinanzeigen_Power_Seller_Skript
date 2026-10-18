@@ -6,7 +6,7 @@
 
 **Userscript für alle, die auf Kleinanzeigen.de viel verkaufen, privat oder mit PRO-Konto: Bausteine für Nachrichten und Anzeigentexte, eine Warnung vor typischen Betrugsmaschen, unter „Meine Anzeigen“ ein Verlauf der Besucher mit eigenen Notizen und ein Verkaufsbuch.**
 
-[![Version](https://img.shields.io/badge/version-0.3.0-blue?style=flat-square)](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/raw/main/powerseller.user.js)
+[![Version](https://img.shields.io/badge/version-0.3.1-blue?style=flat-square)](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/raw/main/powerseller.user.js)
 [![Plattform](https://img.shields.io/badge/plattform-Kleinanzeigen.de-green?style=flat-square)](https://www.kleinanzeigen.de)
 [![Userscript](https://img.shields.io/badge/Tampermonkey-Violentmonkey-black?style=flat-square&logo=tampermonkey)](#%EF%B8%8F-installation)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
@@ -94,7 +94,7 @@ Das Verkaufsbuch kennt nur, was du einträgst. Es liegt nur in deinem Browser, d
 
 Updates holt sich Tampermonkey automatisch aus diesem Repo.
 
-**Einstellungen:** Tampermonkey-Menü → **„PowerSeller: Einstellungen“**, oder in der Auswahl der Bausteine auf **„Bearbeiten …“**. Das Verkaufsbuch öffnet **„PowerSeller: Verkaufsbuch“**.
+**Einstellungen:** Tampermonkey-Menü → **„PowerSeller: Einstellungen“**, oder in der Auswahl der Bausteine auf **„Bearbeiten …“**. Das Verkaufsbuch öffnet **„PowerSeller: Verkaufsbuch“**. Unter **Darstellung** wählst du zwischen **Regenbogen** (Buttons, Boxen und Dialoge des PowerSellers mit farbigem Rand, voreingestellt) und **Standard** (schlicht grau). Warnungen bleiben in beiden rot und gelb.
 
 Das Script läuft auf den Seiten unter `kleinanzeigen.de/m-…` (Nachrichten, Meine Anzeigen) und beim Aufgeben und Bearbeiten von Anzeigen (`/p-anzeige-aufgeben…`, `/p-anzeige-bearbeiten…`). Es verträgt sich mit dem [Superscript](https://github.com/RainbowLabsInc/Kleinanzeigen.de_Superscript), beide nutzen getrennte Speicher.
 
@@ -130,7 +130,7 @@ node test/browser.test.js  # alle Module an nachgebauten Seiten (test/fixtures/)
 | `src/verkaufsbuch.js` | Verkaufsbuch: Formular an den Karten, Übersicht als eigener Dialog |
 | `test/fixtures/` | Nachbauten echter Seiten mit Beispieldaten, ohne persönliche Daten |
 
-Gespeichert wird im Speicher des Userscript-Managers (`GM_setValue`): `kpw-bausteine`, `kpw-felder`, `kpw-warnung`, `kpw-anzeigen`, `kpw-anzeigen-settings`, `kpw-verkaeufe`, `kpw-verkaufsbuch`, `kpw-modules`. Höchstens 3.000 Anzeigen mit je 120 Tagesständen; die am längsten nicht mehr gesehenen ohne Notiz fallen zuerst heraus.
+Gespeichert wird im Speicher des Userscript-Managers (`GM_setValue`): `kpw-bausteine`, `kpw-felder`, `kpw-warnung`, `kpw-anzeigen`, `kpw-anzeigen-settings`, `kpw-verkaeufe`, `kpw-verkaufsbuch`, `kpw-theme`, `kpw-modules`. Höchstens 3.000 Anzeigen mit je 120 Tagesständen; die am längsten nicht mehr gesehenen ohne Notiz fallen zuerst heraus.
 
 ## Lizenz
 

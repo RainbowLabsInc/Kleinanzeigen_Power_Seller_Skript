@@ -174,6 +174,14 @@
         .kpw-bs-foot { display: flex; justify-content: space-between; gap: 8px; padding: 6px 8px 2px; border-top: 1px solid #eceae6; margin-top: 4px; }
         .kpw-bs-foot button { border: 0; background: none; padding: 0; color: #1e1e1e; font: inherit; text-decoration: underline; cursor: pointer; }
         .kpw-bs-empty { padding: 6px 8px; color: #6b6b6b; }
+        :root[data-kpw-theme="rainbow"] .kpw-bs-btn {
+            border: 2px solid transparent; color: #fff;
+            background: linear-gradient(#141418, #141418) padding-box, var(--kpw-rainbow) border-box;
+        }
+        :root[data-kpw-theme="rainbow"] .kpw-bs-btn:hover, :root[data-kpw-theme="rainbow"] .kpw-bs-btn[aria-expanded="true"] {
+            background: linear-gradient(#2a2a30, #2a2a30) padding-box, var(--kpw-rainbow) border-box;
+        }
+        :root[data-kpw-theme="rainbow"] .kpw-bs-pop { padding-top: 9px; background: var(--kpw-rainbow) top / 100% 3px no-repeat, #fff; }
     `);
 
     const btn = el('button', {

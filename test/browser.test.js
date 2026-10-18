@@ -64,6 +64,7 @@ const short = (ago) => { const d = new Date(); d.setDate(d.getDate() - ago); ret
     step('Nachrichten: Warnungen und Bausteine');
     await open('/m-nachrichten.html');
     assert.deepStrictEqual(await page.$$eval('.kpw-warn', ns => ns.map(n => n.dataset.level)), ['hoch', 'hinweis']);
+    assert.strictEqual(await page.$eval('html', n => n.dataset.kpwTheme), 'rainbow', 'Regenbogen ist voreingestellt');
     await page.click('#reply');
     await page.click('.kpw-bs-btn');
     const names = await page.$$eval('.kpw-bs-name', ns => ns.map(n => n.textContent));

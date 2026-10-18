@@ -173,6 +173,15 @@
         .kpw-book .kpw-meter { height: 6px; border-radius: 3px; background: rgba(0,0,0,.1); overflow: hidden; }
         .kpw-book .kpw-meter span { display: block; height: 100%; background: currentColor; }
         .kpw-book select.ks-input { width: auto; }
+        :root[data-kpw-theme="rainbow"] .kpw-vb { padding-left: 10px; background: var(--kpw-rainbow-v) left / 3px 100% no-repeat; }
+        :root[data-kpw-theme="rainbow"] .kpw-vb-bar button {
+            border: 2px solid transparent; color: #fff;
+            background: linear-gradient(#141418, #141418) padding-box, var(--kpw-rainbow) border-box;
+        }
+        :root[data-kpw-theme="rainbow"] .kpw-vb-bar button:hover { background: linear-gradient(#2a2a30, #2a2a30) padding-box, var(--kpw-rainbow) border-box; }
+        :root[data-kpw-theme="rainbow"] .kpw-vb-form .kpw-vb-actions button[data-primary] {
+            border: 2px solid transparent; background: linear-gradient(#141418, #141418) padding-box, var(--kpw-rainbow) border-box;
+        }
     `);
     const ensureStyle = () => { if (!style.isConnected) (document.head || document.documentElement).appendChild(style); };
 

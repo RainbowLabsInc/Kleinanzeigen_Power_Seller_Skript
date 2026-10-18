@@ -177,6 +177,11 @@
         }
         .kpw-ma-sum b { font-weight: 700; }
         .kpw-ma, .kpw-ma *, .kpw-ma-sum, .kpw-ma-sum * { font-family: system-ui, sans-serif !important; }
+        :root[data-kpw-theme="rainbow"] .kpw-ma { padding-left: 10px; background: var(--kpw-rainbow-v) left / 3px 100% no-repeat; }
+        :root[data-kpw-theme="rainbow"] .kpw-ma-sum {
+            border: 2px solid transparent;
+            background: linear-gradient(#f7f6f3, #f7f6f3) padding-box, var(--kpw-rainbow) border-box;
+        }
     `);
 
     const openHist = new Set();     // Anzeigen mit aufgeklapptem Verlauf

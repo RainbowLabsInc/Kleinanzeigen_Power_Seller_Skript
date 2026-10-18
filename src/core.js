@@ -214,6 +214,23 @@
         `;
         const ensureStyles = () => { if (!styleEl.isConnected) (document.head || docRoot).appendChild(styleEl); };
 
+        // --- Darstellung: „rainbow“ (Akzente im Regenbogen wie der Install-Button) oder „standard“.
+        // Die Module schreiben ihre Akzente als :root[data-kpw-theme="rainbow"] … und nutzen
+        // die Verläufe --kpw-rainbow (waagerecht) und --kpw-rainbow-v (senkrecht).
+
+        const THEME_KEY = 'kpw-theme';
+        const THEMES = { rainbow: 'Regenbogen', standard: 'Standard' };
+        const theme = () => { const t = load(THEME_KEY, 'rainbow'); return Object.hasOwn(THEMES, t) ? t : 'rainbow'; };
+        const applyTheme = () => docRoot.setAttribute('data-kpw-theme', theme());
+        applyTheme();
+        onRemoteChange(THEME_KEY, applyTheme);
+        const colors = '#e53935, #fb8c00, #fdd835, #43a047, #1e88e5, #8e24aa';
+        const themeStyle = el('style', { 'data-kpw-ui': '' }, `
+            :root { --kpw-rainbow: linear-gradient(90deg, ${colors}); --kpw-rainbow-v: linear-gradient(180deg, ${colors}); }
+            :root[data-kpw-theme="rainbow"] .ks-panel .ks-head { background: var(--kpw-rainbow) bottom / 100% 3px no-repeat, #fff; }
+        `);
+        (document.head || docRoot).appendChild(themeStyle);
+
         // --- Einstellungen (Dialog)
 
         let panel = null; // { overlay, box, changed, cleanup }
@@ -278,6 +295,14 @@
                         panel.changed ? el('div', { className: 'ks-note ks-row', dataset: { kind: 'ok' } },
                             el('span', { className: 'ks-spacer' }, 'Gilt nach dem Neuladen der Seite.'),
                             el('button', { type: 'button', className: 'ks-action', onclick: () => window.location.reload() }, 'Seite neu laden')) : null),
+                    el('section', { className: 'ks-section' },
+                        el('h3', {}, 'Darstellung'),
+                        el('div', { className: 'ks-row' }, Object.entries(THEMES).map(([id, label]) => radio('kpw-theme', label, theme() === id, () => {
+                            save(THEME_KEY, id);
+                            applyTheme();
+                        }))),
+                        el('p', { className: 'ks-hint' }, 'Regenbogen: Buttons, Boxen und Dialoge des PowerSellers mit farbigem Rand, damit man sie von Kleinanzeigen unterscheidet. '
+                            + 'Warnungen bleiben rot und gelb.')),
                     moduleSections,
                     el('p', { className: 'ks-hint' }, `PowerSeller ${VERSION} · Alles wird nur lokal in deinem Browser gespeichert · `,
                         el('a', { href: '@@REPO@@', target: '_blank', rel: 'noopener' }, 'Projektseite'))));
