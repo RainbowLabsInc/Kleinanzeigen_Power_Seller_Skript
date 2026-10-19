@@ -4,9 +4,9 @@
 
 # 📦 Kleinanzeigen – PowerSeller
 
-**Userscript für alle, die auf Kleinanzeigen.de viel verkaufen, privat oder mit PRO-Konto: Bausteine für Nachrichten und Anzeigentexte, eine Warnung vor typischen Betrugsmaschen, unter „Meine Anzeigen“ ein Verlauf der Besucher mit eigenen Notizen und ein Verkaufsbuch.**
+**Userscript für alle, die auf Kleinanzeigen.de viel verkaufen, privat oder mit PRO-Konto: Bausteine für Nachrichten und Anzeigentexte, eine Warnung vor typischen Betrugsmaschen, unter „Meine Anzeigen“ ein Verlauf der Besucher mit eigenen Notizen, eine Warteliste für Interessenten und ein Verkaufsbuch.**
 
-[![Version](https://img.shields.io/badge/version-0.3.1-blue?style=flat-square)](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/raw/main/powerseller.user.js)
+[![Version](https://img.shields.io/badge/version-0.4.0-blue?style=flat-square)](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/raw/main/powerseller.user.js)
 [![Plattform](https://img.shields.io/badge/plattform-Kleinanzeigen.de-green?style=flat-square)](https://www.kleinanzeigen.de)
 [![Userscript](https://img.shields.io/badge/Tampermonkey-Violentmonkey-black?style=flat-square&logo=tampermonkey)](#%EF%B8%8F-installation)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
@@ -19,7 +19,7 @@
 
 ---
 
-> **Vorabversion.** Bausteine und Betrugswarnung sind an der echten Nachrichtenseite getestet. „Meine Anzeigen“, Verkaufsbuch und die Bausteine beim Einstellen bisher nur an gespeicherten Seiten (privates Konto). Rückmeldungen bitte als [Issue](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/issues).
+> **Vorabversion.** Bausteine, Betrugswarnung, „Meine Anzeigen“, Verkaufsbuch und Darstellung sind an den echten Seiten getestet (privates Konto). Die Warteliste in den Nachrichten bisher nur an einer gespeicherten Seite. Rückmeldungen bitte als [Issue](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/issues).
 
 Wer viel verkauft, schreibt jeden Tag dieselben Antworten: „Ja, ist noch da“, „Preis ist fest“, „Versand geht als DHL-Paket“. Dazu kommen Nachrichten, die nur so tun, als wollte jemand kaufen, und die Frage, welche Anzeige überhaupt noch jemand ansieht. **Der PowerSeller nimmt dir das Tippen ab, warnt dich vor den bekannten Maschen und merkt sich, wie sich deine Anzeigen entwickeln**, lokal in deinem Browser.
 
@@ -28,6 +28,7 @@ Wer viel verkauft, schreibt jeden Tag dieselben Antworten: „Ja, ist noch da“
 | 💬 **Bausteine** | Button „Bausteine“ über dem Nachrichtenfeld und über der Beschreibung beim Einstellen: eigene Texte mit Platzhaltern per Klick oder Taste 1 … 9 einfügen |
 | ⚠️ **Betrugswarnung** | Markiert Nachrichten mit nachgemachten Bezahl- oder Versandlinks, „Geld freigeben“, Kurier-Abholung, Fragen nach Kartendaten oder SMS-Codes, Überzahlung |
 | 📈 **Meine Anzeigen** | Verlauf von Besuchern und Merkern („+28 Besucher seit 17.10.“), Hinweis auf Ladenhüter, eigene Notiz pro Anzeige, Summen über der Liste, CSV-Export |
+| 👥 **Interessenten** | Warteliste pro Anzeige mit Status und Notiz, „Als Nächstes“, Hinweis bei Namen, die schon einmal nicht erschienen sind. In den Nachrichten: Notiz der Anzeige, Warteliste und das Gegenüber mit einem Klick auf die Liste setzen |
 | 📒 **Verkaufsbuch** | „Verkauft …“ an jeder Anzeige: Endpreis, Zahlungsart, Einkaufspreis. Summen pro Monat und Jahr, Gewinn, Stand zur Meldegrenze, CSV-Export |
 
 **Gedacht als Hilfe, nicht als Bot:** Das Script schickt nichts von selbst ab, stellt nichts ein und schiebt nichts hoch. Jede Aktion löst du mit einem Klick aus.
@@ -50,9 +51,10 @@ Wer viel verkauft, schreibt jeden Tag dieselben Antworten: „Ja, ist noch da“
 * 🔴 **Rot (hohes Risiko):** Links auf Seiten, die nach Kleinanzeigen, Versand oder Bezahlen klingen, es aber nicht sind (z. B. `kleinanzeigen-sicher.de`). Außerdem Fragen nach Kartendaten, Bankzugang oder SMS-Codes, Überzahlung mit Bitte um Rücküberweisung, und jeder fremde Link zusammen mit einer weiteren Auffälligkeit.
 * 🟡 **Gelb (Hinweis, abschaltbar):** „Geld erhalten oder freigeben“, Abholung durch Kurier oder Spedition, Wechsel zu WhatsApp oder Telegram, Links auf fremde Seiten.
 * 🙈 **Ausblenden:** Jede Warnung lässt sich bis zum Neuladen wegklicken.
+* 🎯 **Nur fremde Nachrichten:** Geprüft wird, was dein Gegenüber schreibt, nicht deine eigenen Nachrichten und nicht die Sicherheitshinweise von Kleinanzeigen.
 * 🔒 **Ohne Anfragen:** Das Modul liest nur, was auf der Seite steht. Es lädt nichts nach und schickt nichts weg.
 
-Die Warnung ist eine Hilfe, keine Garantie. Sie erkennt nicht jede Masche, und auch harmlose Nachrichten, deine eigenen eingeschlossen, können markiert werden.
+Die Warnung ist eine Hilfe, keine Garantie. Sie erkennt nicht jede Masche, und auch harmlose Nachrichten können markiert werden.
 
 ## 📈 Meine Anzeigen
 
@@ -63,6 +65,14 @@ Die Warnung ist eine Hilfe, keine Garantie. Sie erkennt nicht jede Masche, und a
 * 📤 **Export:** Alle gemerkten Anzeigen mit letztem Stand und Notiz als CSV (in den Einstellungen), z. B. für Excel.
 
 Der Verlauf beginnt mit deinem ersten Aufruf. Was davor war, weiß das Script nicht. Anzeigen, die noch „Bald Online“ sind, bekommen keinen Ladenhüter-Hinweis. Ein Ablaufdatum zeigt „Meine Anzeigen“ nicht an, darum gibt es (noch) keinen Hinweis auf ablaufende Anzeigen.
+
+## 👥 Interessenten
+
+* 📋 **Warteliste an jeder Anzeige** unter „Meine Anzeigen“: Name, Status (wartet, reserviert, gekauft, abgesagt, nicht erschienen) und Notiz („bietet 40 €, kommt Sa“). Die Reihenfolge ist die Warteliste, mit ↑ ↓ änderbar. Darüber steht **„Als Nächstes: …“** oder **„Reserviert für …“**.
+* 💬 **In den Nachrichten:** Unter dem Kopf der geöffneten Unterhaltung erscheint eine Leiste mit der Notiz der Anzeige und der Warteliste. **„+ Kai auf die Warteliste“** setzt dein Gegenüber mit einem Klick auf die Liste; Status und Notiz änderst du direkt dort.
+* ⚠️ **Nicht erschienen:** Taucht ein Name auf, der schon einmal nicht erschienen ist (auch bei einer anderen Anzeige), steht ein Hinweis dabei.
+
+Namen und Notizen bleiben in deinem Browser.
 
 ## 📒 Verkaufsbuch
 
@@ -104,7 +114,6 @@ Das Script läuft auf den Seiten unter `kleinanzeigen.de/m-…` (Nachrichten, Me
 
 | Version | Inhalt |
 |---|---|
-| 0.4 | **Interessenten in den Nachrichten:** Notiz und Status pro Unterhaltung, Warteliste pro Anzeige, Notiz der Anzeige im Chat |
 | später | Preis-Check gegen ähnliche Anzeigen, Hinweis auf ablaufende Anzeigen (sobald klar ist, wo Kleinanzeigen das Datum zeigt) |
 
 ---
@@ -128,9 +137,10 @@ node test/browser.test.js  # alle Module an nachgebauten Seiten (test/fixtures/)
 | `src/regeln.js` | Regeln der Betrugswarnung, reine Textprüfung, in Node testbar |
 | `src/anzeigen.js` | Meine Anzeigen: liest die Karten (`li[data-testid="ad-card"][data-adid]`), Selektoren im `CONFIG`-Block |
 | `src/verkaufsbuch.js` | Verkaufsbuch: Formular an den Karten, Übersicht als eigener Dialog |
+| `src/interessenten.js` | Interessenten: Warteliste an den Karten, Leiste in der Unterhaltung (`[data-testid="conversation-wrapper"]`) |
 | `test/fixtures/` | Nachbauten echter Seiten mit Beispieldaten, ohne persönliche Daten |
 
-Gespeichert wird im Speicher des Userscript-Managers (`GM_setValue`): `kpw-bausteine`, `kpw-felder`, `kpw-warnung`, `kpw-anzeigen`, `kpw-anzeigen-settings`, `kpw-verkaeufe`, `kpw-verkaufsbuch`, `kpw-theme`, `kpw-modules`. Höchstens 3.000 Anzeigen mit je 120 Tagesständen; die am längsten nicht mehr gesehenen ohne Notiz fallen zuerst heraus.
+Gespeichert wird im Speicher des Userscript-Managers (`GM_setValue`): `kpw-bausteine`, `kpw-felder`, `kpw-warnung`, `kpw-anzeigen`, `kpw-anzeigen-settings`, `kpw-verkaeufe`, `kpw-verkaufsbuch`, `kpw-interessenten`, `kpw-theme`, `kpw-modules`. Höchstens 3.000 Anzeigen mit je 120 Tagesständen; die am längsten nicht mehr gesehenen ohne Notiz fallen zuerst heraus.
 
 ## Lizenz
 

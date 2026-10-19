@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          Kleinanzeigen - PowerSeller
 // @namespace     @@REPO@@
-// @description   Hilfen für Vielverkäufer auf Kleinanzeigen.de, privat und PRO: Bausteine für Nachrichten und Anzeigentexte, Warnung vor typischen Betrugsmaschen, Besucher-Verlauf und Notizen unter „Meine Anzeigen“. Alles lokal, jedes Modul einzeln abschaltbar.
+// @description   Hilfen für Vielverkäufer auf Kleinanzeigen.de, privat und PRO: Bausteine für Nachrichten und Anzeigentexte, Warnung vor typischen Betrugsmaschen, Besucher-Verlauf, Notizen, Warteliste für Interessenten und Verkaufsbuch. Alles lokal, jedes Modul einzeln abschaltbar.
 // @author        RainbowlabsInc
 // @copyright     2026, RainbowlabsInc
 // @license       MIT

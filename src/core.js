@@ -9,6 +9,7 @@
  *   - Betrugswarnung ...... src/warnung.js (Regeln in src/regeln.js)
  *   - Meine Anzeigen ...... src/anzeigen.js
  *   - Verkaufsbuch ........ src/verkaufsbuch.js
+ *   - Interessenten ....... src/interessenten.js
  *
  * Kern und Module sind wie beim Superscript aufgebaut (gleiche KS-Schnittstelle), damit die
  * Module später auch dort laufen können. Gespeichert wird unter eigenen Schlüsseln (kpw-…).

@@ -15,7 +15,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION = '0.3.1';
+const VERSION = '0.4.0';
 const OUT = 'powerseller.user.js';
 const REPO = 'https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript';
 
@@ -46,6 +46,12 @@ const MODULES = [
         file: 'src/verkaufsbuch.js',
         label: 'Verkaufsbuch',
         description: '„Verkauft …“ an jeder Anzeige: Endpreis, Zahlungsart, Einkaufspreis festhalten. Summen pro Monat und Jahr, Meldegrenze, CSV-Export.',
+    },
+    {
+        id: 'interessenten',
+        file: 'src/interessenten.js',
+        label: 'Interessenten',
+        description: 'Warteliste pro Anzeige mit Status und Notiz, Hinweis bei Namen, die schon einmal nicht erschienen sind; Notiz und Warteliste neben Anzeigen-Links in den Nachrichten.',
     },
 ];
 

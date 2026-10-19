@@ -176,6 +176,79 @@ const short = (ago) => { const d = new Date(); d.setDate(d.getDate() - ago); ret
     assert.ok(!(await page.$('.kpw-book')), 'Esc schließt das Verkaufsbuch');
     if (process.env.SHOT) await page.screenshot({ path: process.env.SHOT, fullPage: true });
 
+    // --- Interessenten
+    step('Interessenten: Warteliste, Status, nicht erschienen');
+    await open('/m-meine-anzeigen.html');
+    const card2 = 'li[data-adid="1000000002"] .kpw-in';
+    const addPerson = async (card, name, note) => {
+        await page.fill(`${card} .kpw-in-add input >> nth=0`, name);
+        await page.fill(`${card} .kpw-in-add input >> nth=1`, note);
+        await page.press(`${card} .kpw-in-add input >> nth=1`, 'Enter');
+        await page.waitForTimeout(50);
+    };
+    assert.strictEqual(await page.$eval(`${card2} .kpw-in-head button`, n => n.textContent), '+ Interessent');
+    await page.click(`${card2} .kpw-in-head button`);
+    await addPerson(card2, 'Tina', 'bietet 140 €');
+    await addPerson(card2, 'Max', '');
+    const head2 = () => page.$eval(`${card2} .kpw-in-head`, n => n.textContent);
+    assert.match(await head2(), /Interessenten: 2.*Als Nächstes: Tina/);
+    await page.selectOption(`${card2} .kpw-in-row >> nth=0 >> select`, 'reserviert');
+    await page.waitForTimeout(50);
+    assert.match(await head2(), /Reserviert für Tina/);
+    assert.doesNotMatch(await head2(), /Als Nächstes/);
+    await page.selectOption(`${card2} .kpw-in-row >> nth=0 >> select`, 'noshow');
+    await page.waitForTimeout(50);
+    assert.match(await head2(), /Interessenten: 2 \(1 offen\).*Als Nächstes: Max/);
+    await page.click(`${card2} .kpw-in-row >> nth=1 >> button[aria-label="Nach oben"]`);
+    await page.waitForTimeout(50);
+    assert.deepStrictEqual(await page.$$eval(`${card2} .kpw-in-name`, ns => ns.map(n => n.textContent)), ['Max', 'Tina']);
+    const card3 = 'li[data-adid="1000000003"] .kpw-in';
+    await page.click(`${card3} .kpw-in-head button`);
+    await addPerson(card3, 'tina', '');
+    assert.strictEqual(await page.$eval(`${card3} .kpw-in-warn`, n => n.textContent), '⚠ Ist schon einmal nicht erschienen');
+    const people = await page.evaluate(() => JSON.parse(localStorage.getItem('kpw-interessenten')));
+    assert.deepStrictEqual(people['1000000002'].map(p => [p.name, p.status, p.note]), [['Max', 'wartet', ''], ['Tina', 'noshow', 'bietet 140 €']]);
+
+    // --- Echte Nachrichtenseite (Nachbau)
+    step('Nachrichten (Nachbau): Warnung nur bei Nachrichten des Gegenübers');
+    pages['/m-nachrichten.html'] = fixture('nachrichten.html');
+    await open('/m-nachrichten.html');
+    assert.strictEqual(await page.$$eval('.kpw-warn', ns => ns.length), 0, 'kein Fehlalarm bei Sicherheitshinweis und eigenen Nachrichten');
+    await page.evaluate(() => {
+        const li = document.querySelector('.MessageList li').cloneNode(true);
+        li.querySelectorAll('[data-testid="INBOUND"] .whitespace-pre-wrap').forEach(n => {
+            n.textContent = 'Mein Kurier holt ab. Bitte bestätige die Zahlung unter kleinanzeigen-sicher.de/zahlung';
+        });
+        document.querySelector('.MessageList').append(li);
+    });
+    await page.waitForTimeout(600);
+    assert.deepStrictEqual(await page.$$eval('.kpw-warn', ns => ns.map(n => n.dataset.level)), ['hoch']);
+    assert.ok(await page.$eval('.kpw-warn', n => !!n.previousElementSibling.matches('[data-testid="INBOUND"]')), 'Warnung direkt unter der Nachricht');
+
+    step('Nachrichten (Nachbau): Bausteine im echten Nachrichtenfeld');
+    await page.click('#nachricht');
+    await page.click('.kpw-bs-btn');
+    await page.keyboard.press('1');
+    assert.strictEqual(await page.$eval('#nachricht', t => t.value), 'Mein Text'); // erster Baustein (seit dem Schritt „Anzeige aufgeben“)
+
+    step('Nachrichten (Nachbau): Leiste mit Notiz und Warteliste');
+    const bar = '.kpw-in-bar';
+    assert.ok(await page.$eval(bar, n => n.previousElementSibling.tagName === 'HEADER'), 'Leiste unter dem Kopf der Unterhaltung');
+    assert.match(await page.$eval(bar, n => n.textContent), /📝 Regal 3, EK 20 €/);
+    assert.strictEqual(await page.$eval(`${bar} .kpw-in-addbtn`, n => n.textContent), '+ Käufer Kai auf die Warteliste');
+    await page.click(`${bar} .kpw-in-addbtn`);
+    await page.waitForTimeout(50);
+    assert.match(await page.$eval(bar, n => n.textContent), /Als Nächstes: Käufer Kai.*Käufer Kai: Platz 1 von 1/);
+    await page.selectOption(`${bar} select`, 'reserviert');
+    await page.fill(`${bar} input`, 'kommt Sa 10 Uhr');
+    await page.press(`${bar} input`, 'Enter');
+    await page.waitForTimeout(50);
+    const kai = await page.evaluate(() => JSON.parse(localStorage.getItem('kpw-interessenten'))['1000000001'][0]);
+    assert.deepStrictEqual([kai.name, kai.uid, kai.status, kai.note], ['Käufer Kai', '100000001', 'reserviert', 'kommt Sa 10 Uhr']);
+    assert.match(await page.$eval(bar, n => n.textContent), /Reserviert für Käufer Kai/);
+    await open('/m-meine-anzeigen.html');
+    assert.match(await page.$eval('li[data-adid="1000000001"] .kpw-in-head', n => n.textContent), /Reserviert für Käufer Kai/);
+
     assert.deepStrictEqual(errors, [], 'Fehler auf der Seite');
     await browser.close();
     console.log('browser: alle Schritte bestanden.');

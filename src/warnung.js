@@ -6,9 +6,11 @@
  * Unter der Nachricht steht, was aufgefallen ist.
  *
  * - Nur Lesen: Es wird nichts nachgeladen und nichts weggeschickt.
- * - Die Nachrichten werden nicht über feste Selektoren gesucht, sondern als kleinste
- *   Textblöcke der Seite. Darum klappt es auch, wenn Kleinanzeigen den Aufbau ändert.
- *   Eigene Nachrichten können dabei auch markiert werden.
+ * - Geprüft werden nur Nachrichten des Gegenübers ([data-testid="INBOUND"]), nicht die
+ *   eigenen und nicht die Hinweise von Kleinanzeigen.
+ * - Findet sich keine solche Unterhaltung (Kleinanzeigen hat den Aufbau geändert), werden
+ *   ersatzweise die kleinsten Textblöcke der Seite geprüft. Dann können auch eigene
+ *   Nachrichten markiert werden.
  */
 
 (function () {
@@ -17,8 +19,11 @@
     const CONFIG = {
         keys: { settings: 'kpw-warnung' },
         defaultSettings: { hints: true },   // auch gelbe Hinweise zeigen
-        // Nur auf diesen Seiten prüfen (Pfad). Stand 10/2026, mit eingeloggtem Konto zu bestätigen.
+        // Nur auf diesen Seiten prüfen (Pfad)
         paths: [/^\/m-nachrichten/],
+        // Stand 10/2026 (gespeicherte Seite „Meine Nachrichten“): Unterhaltung und Nachrichten des Gegenübers
+        conversationSelector: '[data-testid="conversation-wrapper"]',
+        inboundSelector: '[data-testid="INBOUND"]',
         // Bereich der Seite, in dem gesucht wird (erster Treffer), sonst <body>
         rootSelectors: ['main', '#site-content', '#content'],
         minLength: 8,
@@ -148,7 +153,9 @@
 
     function scan() {
         if (!style.isConnected) (document.head || document.documentElement).appendChild(style);
-        findBlocks(root()).forEach(checkBlock);
+        const conversation = document.querySelector(CONFIG.conversationSelector);
+        if (conversation) conversation.querySelectorAll(CONFIG.inboundSelector).forEach(checkBlock);
+        else findBlocks(root()).forEach(checkBlock);
     }
 
     function rescanAll() {
