@@ -33,8 +33,8 @@
         fieldsMax: 20,
         // Beispiele beim ersten Start (und bei „Auf Beispiele zurücksetzen“)
         defaultItems: [
-            ['Noch da', 'Hallo, ja, der Artikel ist noch zu haben. Abholung in {Abholort} nach Absprache.', 'nachricht'],
-            ['Preis fest', 'Hallo, danke für dein Interesse. Der Preis ist leider fest.', 'nachricht'],
+            ['Noch da', 'Hallo {Name}, ja, der Artikel ist noch zu haben. Abholung in {Abholort} nach Absprache.', 'nachricht'],
+            ['Preis fest', 'Hallo {Name}, danke für dein Interesse. Der Preis von {Preis} ist leider fest.', 'nachricht'],
             ['Versand', 'Versand ist möglich, als {Versand}. Die Versandkosten kommen zum Preis dazu.', 'nachricht'],
             ['Abholung', 'Gern. Wann würde es dir passen? Abholung in {Abholort}.', 'nachricht'],
             ['Reserviert', 'Der Artikel ist im Moment reserviert. Ich melde mich, falls er wieder frei wird.', 'nachricht'],
@@ -43,6 +43,14 @@
             ['Versand & Abholung', 'Abholung in {Abholort}. Versand als {Versand} gegen Aufpreis möglich.', 'anzeige'],
         ],
         places: { nachricht: 'Nachrichten', anzeige: 'Anzeigentexte', beide: 'Beides' },
+        // Angaben aus der Seite (Stand 10/2026)
+        page: {
+            conversation: '[data-testid="conversation-wrapper"]',
+            adLinkRe: /\/(?:zur-anzeige\/|s-anzeige\/(?:[^/?#]+\/)?)(\d{6,})/,
+            adsKey: 'kpw-anzeigen',
+            titleInput: 'input[name="title"]',
+            priceInput: 'input[name="priceAmount"]',
+        },
         defaultFields: [
             ['Abholort', ''],
             ['Versand', 'versichertes DHL-Paket'],
@@ -98,10 +106,40 @@
     const saveItems = (items) => { save(CONFIG.keys.items, items); save(CONFIG.keys.version, CONFIG.version); };
     const saveFields = (fields) => save(CONFIG.keys.fields, fields);
 
-    // {Platzhalter} durch eigene Angaben ersetzen (Groß-/Kleinschreibung egal). Unbekannte
-    // oder leere bleiben stehen.
-    function fill(text, fields) {
+    // Angaben aus der Seite: {Name}, {Titel}, {Preis}. In einer Unterhaltung Name des Gegenübers
+    // („Über Kai“) und Titel der Anzeige aus dem Kopf, der Preis aus „Meine Anzeigen“ (falls die
+    // Anzeige dort schon einmal zu sehen war). Beim Einstellen Titel und Preis aus dem Formular.
+    const textOf = (node) => (node ? node.textContent.replace(/\s+/g, ' ').trim() : '');
+    function pageFields() {
+        const out = {};
+        if (KIND === 'anzeige') {
+            out.titel = (document.querySelector(CONFIG.page.titleInput) || {}).value || '';
+            const p = ((document.querySelector(CONFIG.page.priceInput) || {}).value || '').trim();
+            out.preis = /^\d[\d.,]*$/.test(p) ? `${p} €` : p;
+        } else {
+            const wrap = document.querySelector(CONFIG.page.conversation);
+            if (!wrap) return out;
+            for (const node of wrap.querySelectorAll('div, span')) {
+                if (node.children.length || node.closest('a, .sr-only, [data-kpw-ui]')) continue;
+                const m = textOf(node).match(/^Über (.{1,40})$/);
+                if (m) { out.name = m[1]; break; }
+            }
+            const link = [...wrap.querySelectorAll('a[href]')].find(a => textOf(a) && CONFIG.page.adLinkRe.test(a.getAttribute('href')));
+            if (link) {
+                out.titel = textOf(link);
+                const ads = load(CONFIG.page.adsKey, {});
+                const ad = isObj(ads) ? ads[link.getAttribute('href').match(CONFIG.page.adLinkRe)[1]] : null;
+                if (isObj(ad) && typeof ad.price === 'string') out.preis = ad.price;
+            }
+        }
+        return out;
+    }
+
+    // {Platzhalter} ersetzen (Groß-/Kleinschreibung egal): erst Angaben aus der Seite, dann die
+    // eigenen. Unbekannte oder leere bleiben stehen.
+    function fill(text, fields, fromPage = {}) {
         const map = new Map(fields.filter(f => f.key.trim() && f.value.trim()).map(f => [f.key.trim().toLowerCase(), f.value.trim()]));
+        for (const [k, v] of Object.entries(fromPage)) if (v && v.trim()) map.set(k, v.trim());
         return text.replace(/\{([^{}\n]{1,40})\}/g, (m, k) => map.get(k.trim().toLowerCase()) || m);
     }
 
@@ -118,7 +156,7 @@
     }
 
     function insert(field, raw) {
-        const text = fill(raw, loadFields());
+        const text = fill(raw, loadFields(), pageFields());
         field.focus();
         if (field instanceof HTMLTextAreaElement) {
             const start = field.selectionStart ?? field.value.length;
@@ -420,7 +458,8 @@
             setChildren(box,
                 el('h3', {}, 'Bausteine'),
                 el('p', { className: 'ks-hint' }, 'Erscheinen über dem Nachrichtenfeld und über der Beschreibung beim Einstellen einer Anzeige unter „Bausteine“. '
-                    + 'Platzhalter wie {Abholort} werden durch deine Angaben unten ersetzt. Fehlt eine Angabe, bleibt der Platzhalter stehen und ist markiert.'),
+                    + 'Platzhalter wie {Abholort} werden durch deine Angaben unten ersetzt. Fehlt eine Angabe, bleibt der Platzhalter stehen und ist markiert. '
+                    + 'Automatisch gefüllt werden {Name} (dein Gegenüber in der Unterhaltung), {Titel} und {Preis} (der Anzeige).'),
                 ...rows,
                 el('div', { className: 'ks-row' },
                     el('button', {

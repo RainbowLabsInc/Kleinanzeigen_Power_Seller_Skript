@@ -70,7 +70,7 @@ const short = (ago) => { const d = new Date(); d.setDate(d.getDate() - ago); ret
     const names = await page.$$eval('.kpw-bs-name', ns => ns.map(n => n.textContent));
     assert.ok(names.includes('Noch da') && !names.includes('Privatverkauf'), `Nachrichten-Bausteine: ${names}`);
     await page.keyboard.press('2');
-    assert.match(await page.$eval('#reply', t => t.value), /Preis ist leider fest/);
+    assert.match(await page.$eval('#reply', t => t.value), /ist leider fest/);
 
     // --- Anzeige aufgeben, mit Bausteinen aus 0.1 (ohne „wo“), die ergänzt werden
     step('Anzeige aufgeben: Bausteine für Anzeigentexte, Ergänzung alter Listen');
@@ -248,6 +248,85 @@ const short = (ago) => { const d = new Date(); d.setDate(d.getDate() - ago); ret
     assert.match(await page.$eval(bar, n => n.textContent), /Reserviert für Käufer Kai/);
     await open('/m-meine-anzeigen.html');
     assert.match(await page.$eval('li[data-adid="1000000001"] .kpw-in-head', n => n.textContent), /Reserviert für Käufer Kai/);
+
+    // --- 0.5
+    step('Bausteine: {Name}, {Titel}, {Preis} aus Unterhaltung und Formular');
+    await page.evaluate(() => {
+        localStorage.setItem('kpw-bausteine', JSON.stringify([
+            { id: 'n', name: 'Gruß', text: 'Hallo {Name}, {Titel} kostet {Preis}.', wo: 'nachricht' },
+            { id: 'a', name: 'Angebot', text: 'Biete {Titel} für {Preis}.', wo: 'anzeige' }]));
+        localStorage.setItem('kpw-bausteine-v', '2');
+    });
+    await open('/m-nachrichten.html');
+    await page.fill('#nachricht', '');
+    await page.click('#nachricht');
+    await page.click('.kpw-bs-btn');
+    await page.keyboard.press('1');
+    assert.strictEqual(await page.$eval('#nachricht', t => t.value), 'Hallo Käufer Kai, Bosch Turbinenhäcksler AXT 25 TC kostet 80 € VB.');
+    await open('/p-anzeige-aufgeben-schritt2.html');
+    await page.fill('#ad-description', '');
+    await page.click('#ad-description');
+    await page.click('.kpw-bs-btn');
+    await page.keyboard.press('1');
+    assert.strictEqual(await page.$eval('#ad-description', t => t.value), 'Biete Winterreifen 205/55 R16 für 150 €.');
+
+    step('Interessenten: Kennzeichen in der Liste der Unterhaltungen');
+    await open('/m-nachrichten.html');
+    assert.deepStrictEqual(await page.$$eval('.ConversationListItem .kpw-in-badge', ns => ns.map(n => [n.textContent, n.dataset.status])), [['Reserviert', 'reserviert']]);
+
+    step('Interessenten: „Gekauft“ ins Verkaufsbuch');
+    await page.selectOption('.kpw-in-bar select', 'gekauft');
+    await page.waitForTimeout(50);
+    assert.strictEqual(await page.$eval('.ConversationListItem .kpw-in-badge', n => n.textContent), 'Gekauft');
+    await page.click('.kpw-in-bar .kpw-in-sale');
+    const bookForm = '.kpw-book .kpw-vb-form';
+    await page.waitForSelector(bookForm);
+    assert.deepStrictEqual(await page.$$eval(`${bookForm} input`, ns => ns.map(n => n.value)).then(v => [v[0], v[1], v[3], v[4]]),
+        ['Bosch Turbinenhäcksler AXT 25 TC', '80', '20', 'Käufer: Käufer Kai']); // EK aus der Notiz „EK 20 €“
+    await page.click(`${bookForm} button[type=submit]`);
+    await page.waitForTimeout(50);
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(100);
+    assert.ok(!(await page.$('.kpw-in-bar .kpw-in-sale')), 'Button verschwindet nach dem Eintrag');
+    const sale2 = await page.evaluate(() => JSON.parse(localStorage.getItem('kpw-verkaeufe')).find(s => s.note === 'Käufer: Käufer Kai'));
+    assert.deepStrictEqual([sale2.adId, sale2.price, sale2.url], ['1000000001', 80, 'https://www.kleinanzeigen.de/zur-anzeige/1000000001']);
+
+    step('Datensicherung: herunterladen, einspielen mit Vorschau');
+    const openSettings = async () => {
+        await page.click('#nachricht');
+        await page.click('.kpw-bs-btn');
+        await page.click('.kpw-bs-foot button');
+        await page.waitForSelector('.ks-panel');
+    };
+    await openSettings();
+    const [download] = await Promise.all([page.waitForEvent('download'), page.click('.ks-panel .ks-action >> text=Sicherung herunterladen')]);
+    assert.match(download.suggestedFilename(), /^powerseller-sicherung-\d{4}-\d{2}-\d{2}\.json$/);
+    const backup = JSON.parse(fs.readFileSync(await download.path(), 'utf8'));
+    assert.strictEqual(backup.format, 'kleinanzeigen-powerseller-backup');
+    assert.strictEqual(backup.data['kpw-verkaeufe'].length, 3);
+    assert.ok(backup.data['kpw-interessenten'] && backup.data['kpw-anzeigen'] && backup.data['kpw-bausteine']);
+    assert.ok((await page.evaluate(() => JSON.parse(localStorage.getItem('kpw-backup')))).last > 0, 'Zeitpunkt der Sicherung gemerkt');
+    await page.evaluate(() => localStorage.setItem('kpw-verkaeufe', '[]'));
+    await page.setInputFiles('.ks-panel input[data-kpw-restore]',
+        { name: 'kaputt.json', mimeType: 'application/json', buffer: Buffer.from('{"format":"etwas anderes"}') });
+    assert.match(await page.$eval('.ks-panel .ks-note[data-kind="error"]', n => n.textContent), /keine Sicherung des PowerSellers/);
+    await page.setInputFiles('.ks-panel input[data-kpw-restore]',
+        { name: 'sicherung.json', mimeType: 'application/json', buffer: fs.readFileSync(await download.path()) });
+    const preview = await page.$$eval('.kpw-restore tbody tr', rs => rs.map(r => [...r.children].map(c => c.textContent)));
+    assert.deepStrictEqual(preview.find(r => r[0] === 'Verkäufe'), ['Verkäufe', '3', '0']);
+    await page.click('.kpw-restore .ks-action >> text=Übernehmen');
+    assert.strictEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('kpw-verkaeufe')).length), 3);
+    assert.match(await page.$eval('.ks-panel .ks-note[data-kind="ok"]', n => n.textContent), /Sicherung übernommen/);
+    await page.keyboard.press('Escape');
+
+    step('Datensicherung: Erinnerung nach 30 Tagen');
+    await page.evaluate(() => localStorage.setItem('kpw-backup', JSON.stringify({ since: Date.now() - 40 * 864e5 })));
+    await open('/m-nachrichten.html');
+    await page.waitForSelector('.kpw-remind', { timeout: 5000 });
+    assert.match(await page.$eval('.kpw-remind', n => n.textContent), /noch nicht gesichert/);
+    await page.click('.kpw-remind button >> text=Später');
+    assert.ok(!(await page.$('.kpw-remind')));
+    assert.ok((await page.evaluate(() => JSON.parse(localStorage.getItem('kpw-backup')))).snooze > Date.now() + 6 * 864e5);
 
     assert.deepStrictEqual(errors, [], 'Fehler auf der Seite');
     await browser.close();

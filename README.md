@@ -6,7 +6,7 @@
 
 **Userscript für alle, die auf Kleinanzeigen.de viel verkaufen, privat oder mit PRO-Konto: Bausteine für Nachrichten und Anzeigentexte, eine Warnung vor typischen Betrugsmaschen, unter „Meine Anzeigen“ ein Verlauf der Besucher mit eigenen Notizen, eine Warteliste für Interessenten und ein Verkaufsbuch.**
 
-[![Version](https://img.shields.io/badge/version-0.4.0-blue?style=flat-square)](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/raw/main/powerseller.user.js)
+[![Version](https://img.shields.io/badge/version-0.5.0-blue?style=flat-square)](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/raw/main/powerseller.user.js)
 [![Plattform](https://img.shields.io/badge/plattform-Kleinanzeigen.de-green?style=flat-square)](https://www.kleinanzeigen.de)
 [![Userscript](https://img.shields.io/badge/Tampermonkey-Violentmonkey-black?style=flat-square&logo=tampermonkey)](#%EF%B8%8F-installation)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
@@ -39,6 +39,7 @@ Wer viel verkauft, schreibt jeden Tag dieselben Antworten: „Ja, ist noch da“
 
 * 🧩 **Einfügen:** Sobald du in ein Nachrichtenfeld klickst, erscheint darüber **„Bausteine“**. Ein Klick zeigt deine Antworten, ein weiterer fügt sie an der Schreibmarke ein. Schneller geht's mit den Tasten **1 … 9**, solange die Auswahl offen ist.
 * 🏷️ **Platzhalter:** In geschweiften Klammern, z. B. `{Abholort}` oder `{Versand}`. Sie werden durch deine Angaben ersetzt. Fehlt eine Angabe, bleibt der Platzhalter stehen und ist markiert, sodass du direkt lostippen kannst.
+* 🪄 **Automatisch gefüllt:** `{Name}` (dein Gegenüber in der Unterhaltung), `{Titel}` (die Anzeige) und `{Preis}` (beim Einstellen aus dem Formular; in den Nachrichten, sobald die Anzeige einmal unter „Meine Anzeigen“ zu sehen war). Aus „Hallo {Name}, {Titel} ist noch da“ wird „Hallo Kai, Bosch Turbinenhäcksler ist noch da“.
 * 📝 **Auch beim Einstellen:** Beim Aufgeben und Bearbeiten einer Anzeige sitzt der Button über der Beschreibung, in jeder Kategorie. Dort erscheinen nur Bausteine für Anzeigentexte (z. B. „Privatverkauf, daher keine Garantie …“), jeweils als eigener Absatz.
 * ✏️ **Bearbeiten:** In den Einstellungen anlegen, umbenennen, sortieren, löschen und festlegen, ob ein Baustein bei Nachrichten, Anzeigentexten oder beidem erscheint. Acht Beispiele sind schon da.
 * 📤 **Teilen:** Export und Import als JSON-Datei, z. B. damit im Team alle dieselben Antworten haben.
@@ -71,6 +72,8 @@ Der Verlauf beginnt mit deinem ersten Aufruf. Was davor war, weiß das Script ni
 * 📋 **Warteliste an jeder Anzeige** unter „Meine Anzeigen“: Name, Status (wartet, reserviert, gekauft, abgesagt, nicht erschienen) und Notiz („bietet 40 €, kommt Sa“). Die Reihenfolge ist die Warteliste, mit ↑ ↓ änderbar. Darüber steht **„Als Nächstes: …“** oder **„Reserviert für …“**.
 * 💬 **In den Nachrichten:** Unter dem Kopf der geöffneten Unterhaltung erscheint eine Leiste mit der Notiz der Anzeige und der Warteliste. **„+ Kai auf die Warteliste“** setzt dein Gegenüber mit einem Klick auf die Liste; Status und Notiz änderst du direkt dort.
 * ⚠️ **Nicht erschienen:** Taucht ein Name auf, der schon einmal nicht erschienen ist (auch bei einer anderen Anzeige), steht ein Hinweis dabei.
+* 🏷️ **In der Liste der Unterhaltungen:** Neben dem Titel steht der Status des Gegenübers, z. B. „Reserviert“, „Wartet, Platz 2“ oder „⚠ Nicht erschienen“. So siehst du die Lage, ohne jede Unterhaltung zu öffnen.
+* 📒 **Gekauft → Verkaufsbuch:** Steht jemand auf „Gekauft“, trägst du den Verkauf mit einem Klick ein. Artikel, Preis, Käufer und (aus „EK …“ in der Notiz) der Einkaufspreis sind schon ausgefüllt.
 
 Namen und Notizen bleiben in deinem Browser.
 
@@ -81,7 +84,15 @@ Namen und Notizen bleiben in deinem Browser.
 * 🧾 **Meldegrenze:** Plattformen melden Verkäufer ans Bundeszentralamt für Steuern, wenn sie in einem Jahr 30 Verkäufe oder mehr als 2.000 € erreichen (DAC7). Das Verkaufsbuch zeigt, wie weit deine eingetragenen Verkäufe „über Kleinanzeigen bezahlt“ davon entfernt sind. Kleinanzeigen zählt nach eigener Aussage nur Verkäufe über das eigene Bezahlsystem; maßgeblich ist die „Verkaufsübersicht“ in deinem Profil. Das ist ein Hinweis, **keine Steuerberatung**.
 * 📤 **Export:** Alle Verkäufe als CSV, z. B. für Excel oder die Buchhaltung.
 
-Das Verkaufsbuch kennt nur, was du einträgst. Es liegt nur in deinem Browser, darum ab und zu als CSV sichern.
+Das Verkaufsbuch kennt nur, was du einträgst. Es liegt nur in deinem Browser, darum ab und zu sichern (siehe unten).
+
+## 💾 Datensicherung
+
+Alle Daten des PowerSellers liegen nur in deinem Browser. Ein neuer Rechner oder geleerte Browserdaten, und sie wären weg. Darum:
+
+* 📥 **Sicherung herunterladen:** In den Einstellungen unter **Datensicherung**. Eine einzige Datei mit Bausteinen, Verlauf, Notizen, Interessenten, Verkaufsbuch und Einstellungen.
+* 📤 **Sicherung einspielen:** Datei wählen, dann zeigt eine Vorschau, was drinsteht und was du jetzt hast. Erst **„Übernehmen“** ersetzt deine Daten.
+* ⏰ **Erinnerung:** Ist die letzte Sicherung mehr als 30 Tage her (und gibt es etwas zu sichern), erscheint unten links ein Hinweis mit **„Jetzt sichern“** oder **„Später“** (eine Woche Ruhe). Beim Einstellen einer Anzeige stört er nicht.
 
 ---
 
@@ -114,7 +125,8 @@ Das Script läuft auf den Seiten unter `kleinanzeigen.de/m-…` (Nachrichten, Me
 
 | Version | Inhalt |
 |---|---|
-| später | Preis-Check gegen ähnliche Anzeigen, Hinweis auf ablaufende Anzeigen (sobald klar ist, wo Kleinanzeigen das Datum zeigt) |
+| 1.0 | **Verlässlich:** Selbstprüfung mit Hinweis, wenn Kleinanzeigen den Aufbau einer Seite ändert; PRO-Konten prüfen; echte Screenshots; Veröffentlichung (z. B. Greasy Fork) |
+| später | Preis-Check gegen ähnliche Anzeigen, Erinnerung an Abholtermine, Hinweis auf ablaufende Anzeigen (sobald klar ist, wo Kleinanzeigen das Datum zeigt) |
 
 ---
 
@@ -140,7 +152,7 @@ node test/browser.test.js  # alle Module an nachgebauten Seiten (test/fixtures/)
 | `src/interessenten.js` | Interessenten: Warteliste an den Karten, Leiste in der Unterhaltung (`[data-testid="conversation-wrapper"]`) |
 | `test/fixtures/` | Nachbauten echter Seiten mit Beispieldaten, ohne persönliche Daten |
 
-Gespeichert wird im Speicher des Userscript-Managers (`GM_setValue`): `kpw-bausteine`, `kpw-felder`, `kpw-warnung`, `kpw-anzeigen`, `kpw-anzeigen-settings`, `kpw-verkaeufe`, `kpw-verkaufsbuch`, `kpw-interessenten`, `kpw-theme`, `kpw-modules`. Höchstens 3.000 Anzeigen mit je 120 Tagesständen; die am längsten nicht mehr gesehenen ohne Notiz fallen zuerst heraus.
+Gespeichert wird im Speicher des Userscript-Managers (`GM_setValue`): `kpw-bausteine`, `kpw-felder`, `kpw-warnung`, `kpw-anzeigen`, `kpw-anzeigen-settings`, `kpw-verkaeufe`, `kpw-verkaufsbuch`, `kpw-interessenten`, `kpw-interessenten-titel`, `kpw-theme`, `kpw-backup`, `kpw-modules`. Alle außer `kpw-backup` stecken in der Datensicherung (Liste in `src/core.js`, `BACKUP.keys`). Höchstens 3.000 Anzeigen mit je 120 Tagesständen; die am längsten nicht mehr gesehenen ohne Notiz fallen zuerst heraus.
 
 ## Lizenz
 

@@ -88,7 +88,7 @@
         return {
             id: typeof x.id === 'string' && x.id ? x.id : newId(),
             adId: typeof x.adId === 'string' && /^\d+$/.test(x.adId) ? x.adId : '',
-            url: typeof x.url === 'string' && /^https:\/\/www\.kleinanzeigen\.de\/s-anzeige\//.test(x.url) ? x.url.slice(0, 300) : '',
+            url: typeof x.url === 'string' && /^https:\/\/www\.kleinanzeigen\.de\/(s-anzeige|zur-anzeige)\//.test(x.url) ? x.url.slice(0, 300) : '',
             title: typeof x.title === 'string' ? x.title.slice(0, CONFIG.titleMax) : '',
             price: num(x.price),
             date: x.date,
@@ -317,7 +317,7 @@
     // Übersicht
     // ------------------------------------------------------------------
 
-    let book = null; // { overlay, box, year, adding }
+    let book = null; // { overlay, box, year, adding: false | true | Vorlage, onSaved }
 
     function closeBook() {
         if (!book) return;
@@ -427,7 +427,13 @@
                         el('tfoot', {}, el('tr', {}, el('td', {}, 'Summe'), el('td', {}), el('td', {}, euro(sum(sales))), el('td', {}), el('td', {}), el('td', {}), el('td', {}))))
                         : el('p', { className: 'ks-hint' }, 'Noch keine Verkäufe in diesem Jahr. Unter „Meine Anzeigen“ steht an jeder Anzeige „Verkauft …“.'),
                     book.adding
-                        ? saleForm({}, (saved) => { book.adding = false; renderBook(); }, true)
+                        ? saleForm(book.adding === true ? {} : book.adding, (saved) => {
+                            const cb = book.onSaved;
+                            book.adding = false;
+                            book.onSaved = null;
+                            renderBook();
+                            if (saved && cb) cb();
+                        }, true)
                         : el('div', { className: 'ks-row' },
                             el('button', { type: 'button', className: 'ks-action', onclick: () => { book.adding = true; renderBook(); } }, '+ Verkauf ohne Anzeige eintragen'),
                             el('span', { className: 'ks-spacer' }),
@@ -456,6 +462,15 @@
     // ------------------------------------------------------------------
 
     if (typeof GM_registerMenuCommand === 'function') GM_registerMenuCommand('PowerSeller: Verkaufsbuch', openBook);
+
+    // Für andere Module (Interessenten: „Gekauft“): Verkaufsbuch mit vorausgefülltem Verkauf öffnen.
+    // prefill: { adId, url, title, price, note }; onSaved wird nach dem Speichern aufgerufen.
+    KS.recordSale = (prefill, onSaved) => {
+        openBook();
+        book.adding = isObj(prefill) ? prefill : true;
+        book.onSaved = typeof onSaved === 'function' ? onSaved : null;
+        renderBook();
+    };
 
     KS.addSettings('verkaufsbuch', () => {
         const n = loadSales().length;

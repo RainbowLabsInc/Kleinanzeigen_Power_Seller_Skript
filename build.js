@@ -15,7 +15,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION = '0.4.0';
+const VERSION = '0.5.0';
 const OUT = 'powerseller.user.js';
 const REPO = 'https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript';
 

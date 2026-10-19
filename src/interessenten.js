@@ -20,8 +20,11 @@
     'use strict';
 
     const CONFIG = {
-        keys: { people: 'kpw-interessenten' },     // { <adId>: [{ id, name, uid, status, note, added }] }
-        foreign: { ads: 'kpw-anzeigen' },
+        keys: {
+            people: 'kpw-interessenten',            // { <adId>: [{ id, name, uid, status, note, added }] }
+            titles: 'kpw-interessenten-titel',      // { <adId>: Titel } für die Liste der Unterhaltungen
+        },
+        foreign: { ads: 'kpw-anzeigen', sales: 'kpw-verkaeufe' },
         pages: { anzeigen: /^\/m-meine-anzeigen/, nachrichten: /^\/m-nachrichten/ },
         // Stand 10/2026, wie im Modul Meine Anzeigen
         cardSelector: 'li[data-testid="ad-card"][data-adid]',
@@ -32,6 +35,7 @@
         conversationSelector: '[data-testid="conversation-wrapper"]',
         adLinkRe: /\/(?:zur-anzeige\/|s-anzeige\/(?:[^/?#]+\/)?)(\d{6,})/,
         activeItemName: '.ConversationListItem.is-highlighted header span span',
+        listItem: '.ConversationListItem',
         perAd: 50,
         nameMax: 40,
         noteMax: 200,
@@ -104,6 +108,37 @@
         return map;
     }
 
+    function adInfo(adId) {
+        const ads = load(CONFIG.foreign.ads, {});
+        return isObj(ads) && isObj(ads[adId]) ? ads[adId] : {};
+    }
+
+    // Titel merken, damit die Liste der Unterhaltungen (dort stehen nur Name und Titel) passt
+    function loadTitles() { const m = load(CONFIG.keys.titles, {}); return isObj(m) ? m : {}; }
+    function rememberTitle(adId, title) {
+        if (!title) return;
+        const map = loadTitles();
+        if (map[adId] === title) return;
+        map[adId] = title.slice(0, 120);
+        save(CONFIG.keys.titles, map);
+    }
+
+    // Verkaufsbuch: Gibt es zu dieser Person schon einen Verkauf? (Notiz „Käufer: Kai“)
+    function loadSales() { const s = load(CONFIG.foreign.sales, []); return Array.isArray(s) ? s.filter(isObj) : []; }
+    const hasSale = (sales, adId, name) => sales.some(s => s.adId === adId && typeof s.note === 'string' && nameKey(s.note).includes(nameKey(name)));
+
+    // „Ins Verkaufsbuch“ bei „Gekauft“, solange dort noch kein Verkauf an diese Person steht
+    function saleButton(adId, p, ad, sales, onSaved) {
+        if (p.status !== 'gekauft' || typeof KS.recordSale !== 'function' || hasSale(sales, adId, p.name)) return null;
+        const info = adInfo(adId);
+        const m = String(info.price || '').match(/(\d[\d.]*)(?:,(\d{1,2}))?\s*€/);
+        const price = m ? Number(m[1].replace(/\./g, '')) + (m[2] ? Number(m[2]) / 100 : 0) : null;
+        return el('button', {
+            type: 'button', className: 'kpw-in-sale',
+            onclick: () => KS.recordSale({ adId, url: ad.url || '', title: ad.title || info.title || '', price, note: `Käufer: ${p.name}` }, onSaved),
+        }, '📒 Im Verkaufsbuch eintragen');
+    }
+
     function adNote(adId) {
         const ads = load(CONFIG.foreign.ads, {});
         return isObj(ads) && isObj(ads[adId]) ? str(ads[adId].note, 300) : '';
@@ -148,6 +183,15 @@
             background: #fff; color: #1e1e1e; font: 13px/1.4 system-ui, sans-serif; height: auto; min-height: 0;
         }
         .kpw-in-bar input { flex: 1; min-width: 160px; }
+        .kpw-in-badge {
+            flex: none; margin-left: 6px; padding: 0 6px; border-radius: 999px; background: #e3f2fd; color: #0d3c61;
+            font: 600 11px/1.6 system-ui, sans-serif !important; white-space: nowrap;
+        }
+        .kpw-in-badge[data-status="reserviert"] { background: #e8eaf6; color: #283593; }
+        .kpw-in-badge[data-status="gekauft"] { background: #e8f5e9; color: #1b5e20; }
+        .kpw-in-badge[data-status="noshow"] { background: #fdecea; color: #8e1c1c; }
+        .kpw-in-badge[data-status="abgesagt"] { background: #eeeeee; color: #555; }
+        .kpw-in-sale { grid-column: 2 / -1; justify-self: start; text-decoration: underline; }
         .kpw-in-note-chip { padding: 1px 8px; border-radius: 6px; background: #eef4fb; color: #1d3a5c; }
         .kpw-in-addbtn { text-decoration: none !important; padding: 3px 12px !important; border: 1px solid #c9c7c2 !important; border-radius: 999px; background: #fff !important; font-weight: 600 !important; }
         :root[data-kpw-theme="rainbow"] .kpw-in-addbtn {
@@ -167,9 +211,10 @@
         return el('button', { type: 'button', className: 'kpw-in-icon', 'aria-label': label, title: label, onclick, disabled }, sym);
     }
 
-    function renderCard(box, adId, all, shows) {
+    function renderCard(box, adId, all, shows, ad, sales) {
         const list = all[adId] || [];
-        const sig = JSON.stringify([list, open.has(adId), list.map(p => shows.get(nameKey(p.name)) || 0)]);
+        const sold = list.map(p => hasSale(sales, adId, p.name));
+        const sig = JSON.stringify([list, open.has(adId), list.map(p => shows.get(nameKey(p.name)) || 0), sold]);
         if (box.dataset.sig === sig || box.contains(document.activeElement)) return;
         box.dataset.sig = sig;
         const next = nextUp(list);
@@ -216,7 +261,8 @@
                     onkeydown: (e) => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } },
                 }),
                 earlier > 0 ? el('span', { className: 'kpw-in-warn' },
-                    `⚠ ${earlier === 1 ? 'Ist schon einmal' : `Ist schon ${earlier}-mal`} nicht erschienen`) : null);
+                    `⚠ ${earlier === 1 ? 'Ist schon einmal' : `Ist schon ${earlier}-mal`} nicht erschienen`) : null,
+                saleButton(adId, p, ad, sales, refresh));
         });
 
         const name = el('input', { maxLength: CONFIG.nameMax, placeholder: 'Name', 'aria-label': 'Name des Interessenten' });
@@ -247,9 +293,14 @@
         ensureStyle();
         const all = loadPeople();
         const shows = noShows(all);
+        const sales = loadSales();
         for (const card of cards) {
             const adId = card.getAttribute('data-adid');
             if (!/^\d+$/.test(adId || '')) continue;
+            const img = card.querySelector('img[data-testid="ad-image"]');
+            const link = card.querySelector('a[href*="/s-anzeige/"]');
+            const ad = { title: (img && img.getAttribute('alt')) || '', url: link ? link.href : '' };
+            rememberTitle(adId, ad.title);
             let box = card.querySelector('.kpw-in');
             if (!box) {
                 box = el('div', { className: 'kpw-in', 'data-kpw-ui': '' });
@@ -261,7 +312,7 @@
                 if (anchor && anchor !== card) anchor.after(box);
                 else (card.querySelector('h3')?.parentElement || card).appendChild(box);
             }
-            renderCard(box, adId, all, shows);
+            renderCard(box, adId, all, shows, ad, sales);
         }
     }
 
@@ -287,7 +338,7 @@
         if (!name) name = text(document.querySelector(CONFIG.activeItemName));
         const user = wrap.querySelector('a[href*="userId="]');
         const uid = user ? (user.getAttribute('href').match(/userId=(\d+)/) || [])[1] || '' : '';
-        return { wrap, header, adId, title: text(link), name: str(name, CONFIG.nameMax), uid };
+        return { wrap, header, adId, title: text(link), url: link.href, name: str(name, CONFIG.nameMax), uid };
     }
 
     function findPerson(list, conv) {
@@ -295,11 +346,11 @@
             || list.find(p => !p.uid && conv.name && nameKey(p.name) === nameKey(conv.name)) || null;
     }
 
-    function renderBar(bar, conv, all, shows) {
+    function renderBar(bar, conv, all, shows, sales) {
         const list = all[conv.adId] || [];
         const me = findPerson(list, conv);
         const note = adNote(conv.adId);
-        const sig = JSON.stringify([conv.adId, conv.name, conv.uid, list, note]);
+        const sig = JSON.stringify([conv.adId, conv.name, conv.uid, list, note, me ? hasSale(sales, conv.adId, me.name) : null]);
         if (bar.dataset.sig === sig || bar.contains(document.activeElement)) return;
         bar.dataset.sig = sig;
         const refresh = () => {
@@ -335,7 +386,8 @@
                     onchange: (e) => { update(conv.adId, l => { const x = l.find(y => y.id === me.id); if (x) x.note = str(e.target.value, CONFIG.noteMax); }); },
                     onblur: refresh,
                     onkeydown: (e) => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } },
-                }));
+                }),
+                saleButton(conv.adId, me, conv, sales, refresh));
         } else {
             mine = el('div', { className: 'kpw-in-head' },
                 el('button', {
@@ -354,19 +406,51 @@
             earlier > 0 ? el('div', { className: 'kpw-in-warn' }, `⚠ ${conv.name} ${earlier === 1 ? 'ist schon einmal' : `ist schon ${earlier}-mal`} nicht erschienen`) : null);
     }
 
+    // Kennzeichen in der Liste der Unterhaltungen: Status des Gegenübers für diese Anzeige
+    function badgeList(all, shows) {
+        const titles = loadTitles();
+        for (const item of document.querySelectorAll(CONFIG.listItem)) {
+            const name = text(item.querySelector('header > span > span'));
+            let title = text(item.querySelector('h3'));
+            if (title.includes('•')) title = title.split('•').pop().trim();     // „Gelöscht • …“
+            let label = '', status = '';
+            for (const id of Object.keys(titles).filter(k => titles[k] === title)) {
+                const list = all[id] || [];
+                const p = name && list.find(x => nameKey(x.name) === nameKey(name));
+                if (!p) continue;
+                status = p.status;
+                label = p.status === 'wartet' ? `Wartet, Platz ${list.indexOf(p) + 1}` : p.status === 'noshow' ? '⚠ Nicht erschienen' : STATUS[p.status];
+                break;
+            }
+            if (!label && name && shows.get(nameKey(name))) { label = '⚠ War schon einmal nicht da'; status = 'noshow'; }
+            const host = item.querySelector('section header') || item.querySelector('header');
+            let badge = item.querySelector('.kpw-in-badge');
+            if (!label || !host) { if (badge) badge.remove(); continue; }
+            if (!badge) {
+                badge = el('span', { className: 'kpw-in-badge', 'data-kpw-ui': '', title: 'PowerSeller: Status auf deiner Warteliste' });
+                host.appendChild(badge);
+            }
+            if (badge.textContent !== label) badge.textContent = label;
+            badge.dataset.status = status;
+        }
+    }
+
     function scanNachrichten() {
+        const all = loadPeople();
+        const shows = noShows(all);
+        if (document.querySelector(CONFIG.listItem)) { ensureStyle(); badgeList(all, shows); }
         const conv = readConversation();
         const old = document.querySelector('.kpw-in-bar');
         if (!conv) { if (old) old.remove(); return; }
         ensureStyle();
+        rememberTitle(conv.adId, conv.title);
         let bar = old;
         if (!bar || bar.previousElementSibling !== conv.header) {
             if (bar) bar.remove();
             bar = el('div', { className: 'kpw-in kpw-in-bar', 'data-kpw-ui': '', role: 'region', 'aria-label': 'PowerSeller: Warteliste' });
             conv.header.after(bar);
         }
-        const all = loadPeople();
-        renderBar(bar, conv, all, noShows(all));
+        renderBar(bar, conv, all, shows, loadSales());
     }
 
     // ------------------------------------------------------------------
@@ -383,5 +467,6 @@
     const resign = () => { document.querySelectorAll('.kpw-in').forEach(b => delete b.dataset.sig); schedule(); };
     KS.onRemoteChange(CONFIG.keys.people, resign);
     KS.onRemoteChange(CONFIG.foreign.ads, resign);
+    KS.onRemoteChange(CONFIG.foreign.sales, resign);
     scan();
 })();
