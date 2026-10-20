@@ -29,7 +29,7 @@ const KPW_REGELN = (() => {
         {
             id: 'code', level: 'hoch',
             label: 'Fragt nach einem Code aus SMS oder App',
-            re: /\b(sms-?code|bestaetigungscode|verifizierungscode|verifikationscode|einmalcode|freigabecode)\b|\bcode\b[^.!?]{0,40}\b(schick|send|nenn|mitteil|weiterleit|gib)|\b(schick|send|nenn|mitteil|weiterleit|gib)\w*\b[^.!?]{0,40}\bcode\b/,
+            re: /\b(sms-?code|bestaetigungscode|verifizierungscode|verifikationscode|einmalcode|freigabecode)\b|(?<!qr-)\bcode\b[^.!?]{0,40}\b(schick|send|nenn|mitteil|weiterleit|gib)|\b(schick|send|nenn|mitteil|weiterleit|gib)\w*\b[^.!?]{0,40}(?<!qr-)\bcode\b/,
         },
         {
             id: 'geld', level: 'hinweis',
@@ -46,6 +46,42 @@ const KPW_REGELN = (() => {
             label: 'Überzahlung oder Rücküberweisung',
             re: /zu viel (ueberwiesen|bezahlt|gezahlt|geschickt)|ueberzahl\w*|differenz (zurueck|ueberweisen|erstatten)|restbetrag (zurueck|ueberweisen|erstatten)/,
         },
+        // Ergänzt 10/2026 nach Warnungen von Polizei und Verbraucherzentralen
+        {
+            id: 'qr-zahlung', level: 'hoch',
+            label: 'Soll einen QR-Code scannen, um Geld zu bekommen oder zu bestätigen („Quishing“)',
+            re: /\bqr(-?code\w*)?\b[^.!?]{0,80}\b(zahl\w*|geld|bestaetig\w*|erhalt\w*|empfang\w*|auszahl\w*|sicher bezahlen)|\b(zahl\w*|geld|bestaetig\w*|erhalt\w*|empfang\w*|auszahl\w*)\b[^.!?]{0,80}\bqr(-?code\w*)?\b/,
+        },
+        {
+            id: 'qr', level: 'hinweis',
+            label: 'Erwähnt einen QR-Code',
+            re: /\bqr(-?code\w*)?\b/,
+        },
+        {
+            id: 'verifizierung', level: 'hoch',
+            label: 'Verlangt Geld für eine „Verifizierung“ oder Freischaltung',
+            re: /\b(verifizierungs|freischalt|aktivierungs|bestaetigungs)(gebuehr|betrag|zahlung)\w*|\bverifizier\w*\b[^.!?]{0,60}\b(ueberweis\w*|zahl\w*|betrag|gebuehr\w*|euro)\b|\b(ueberweis\w*|zahl\w*)\b[^.!?]{0,60}\bverifizier\w*/,
+        },
+        {
+            id: 'vorstrecken', level: 'hoch',
+            label: 'Du sollst Kosten vorstrecken (Transport, Versand, Zoll)',
+            re: /\b(transport|versand|speditions|zoll|versicherungs)\w*\b[^.!?]{0,60}\b(vorstreck\w*|auslegen|vorab (ueberweis|zahl|bezahl)\w*)|\b(vorstreck\w*|auslegen)\b[^.!?]{0,60}\b(transport|versand|spedition|zoll)\w*/,
+        },
+        {
+            id: 'email', level: 'hinweis',
+            label: 'Verweist auf eine E-Mail statt auf die Nachrichten bei Kleinanzeigen',
+            re: /\b(schau|guck|pruef|check|oeffne)\w*\b[^.!?]{0,30}\b(dein|deine|ihr|ihre)\w*\b[^.!?]{0,15}\b(e-?mails?|postfach|posteingang|spam\w*)\b/,
+        },
+        {
+            id: 'support', level: 'hinweis',
+            label: 'Beruft sich auf einen „Kundenservice“ oder „Support“',
+            re: /\b(kundenservice|kundendienst|kundensupport|support(-?(mitarbeiter|team|chat))?|kleinanzeigen-?(team|support))\b/,
+        },
+        {
+            id: 'fehlgeschlagen', level: 'hinweis',
+            label: 'Behauptet, die Zahlung sei fehlgeschlagen',
+            re: /\bzahlung\w*\b[^.!?]{0,30}\b(fehlgeschlagen|abgelehnt|nicht durchgegangen|nicht moeglich)/,
+        },
         {
             id: 'extern', level: 'hinweis',
             label: 'Möchte außerhalb von Kleinanzeigen weiterschreiben',
@@ -61,7 +97,7 @@ const KPW_REGELN = (() => {
     // Echte Adressen bekannter Dienste: nur Hinweis, keine Warnung
     const OFFICIAL = /(^|\.)(dhl\.de|dhl\.com|paypal\.com|paypal\.de|hermesworld\.com|myhermes\.de|dpd\.com|dpd\.de|gls-pakete\.de|gls-group\.com|ups\.com|deutschepost\.de|ebay\.de|ebay\.com)$/;
     // Klingt nach Kleinanzeigen, Versand oder Bezahlen, ist es aber nicht: typische Fälschung
-    const LURE = /kleinanzeig|ebay|dhl|hermes|dpd|gls|ups|paypal|post|paket|versand|liefer|sicher|safe|secure|pay|zahlung|bezahl|kaeufer|verkaeufer|deal|transaktion|treuhand/;
+    const LURE = /kleinanzeig|ebay|dhl|hermes|dpd|gls|ups|paypal|post|paket|versand|liefer|sicher|safe|secure|pay|zahlung|bezahl|kaeufer|verkaeufer|deal|transaktion|treuhand|verif|checkout|confirm|refund|erstatt/;
 
     function hostOf(raw) {
         const s = raw.replace(/[),.;:!?]+$/, '');
@@ -94,6 +130,8 @@ const KPW_REGELN = (() => {
         const norm = normalize(text);
         if (!norm) return { level: null, hits: [] };
         const hits = RULES.filter(r => r.re.test(norm)).map(({ id, level, label }) => ({ id, level, label }));
+        // Der allgemeine QR-Hinweis entfällt, wenn schon die Warnung mit Zahlung greift
+        if (hits.some(h => h.id === 'qr-zahlung')) hits.splice(hits.findIndex(h => h.id === 'qr'), 1);
         const links = linkHits(norm);
         hits.push(...links);
         let level = hits.some(h => h.level === 'hoch') ? 'hoch' : hits.length ? 'hinweis' : null;

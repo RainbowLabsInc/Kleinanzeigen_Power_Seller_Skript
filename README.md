@@ -6,7 +6,7 @@
 
 **Userscript für alle, die auf Kleinanzeigen.de viel verkaufen, privat oder mit PRO-Konto: Bausteine für Nachrichten und Anzeigentexte, eine Warnung vor typischen Betrugsmaschen, unter „Meine Anzeigen“ ein Verlauf der Besucher mit eigenen Notizen, eine Warteliste für Interessenten und ein Verkaufsbuch.**
 
-[![Version](https://img.shields.io/badge/version-0.5.0-blue?style=flat-square)](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/raw/main/powerseller.user.js)
+[![Version](https://img.shields.io/badge/version-0.5.1-blue?style=flat-square)](https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript/raw/main/powerseller.user.js)
 [![Plattform](https://img.shields.io/badge/plattform-Kleinanzeigen.de-green?style=flat-square)](https://www.kleinanzeigen.de)
 [![Userscript](https://img.shields.io/badge/Tampermonkey-Violentmonkey-black?style=flat-square&logo=tampermonkey)](#%EF%B8%8F-installation)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
@@ -49,8 +49,8 @@ Wer viel verkauft, schreibt jeden Tag dieselben Antworten: „Ja, ist noch da“
 
 ## ⚠️ Betrugswarnung
 
-* 🔴 **Rot (hohes Risiko):** Links auf Seiten, die nach Kleinanzeigen, Versand oder Bezahlen klingen, es aber nicht sind (z. B. `kleinanzeigen-sicher.de`). Außerdem Fragen nach Kartendaten, Bankzugang oder SMS-Codes, Überzahlung mit Bitte um Rücküberweisung, und jeder fremde Link zusammen mit einer weiteren Auffälligkeit.
-* 🟡 **Gelb (Hinweis, abschaltbar):** „Geld erhalten oder freigeben“, Abholung durch Kurier oder Spedition, Wechsel zu WhatsApp oder Telegram, Links auf fremde Seiten.
+* 🔴 **Rot (hohes Risiko):** Links auf Seiten, die nach Kleinanzeigen, Versand oder Bezahlen klingen, es aber nicht sind (z. B. `kleinanzeigen-sicher.de`). Außerdem QR-Codes, die du scannen sollst, um Geld zu bekommen oder eine Zahlung zu bestätigen („Quishing“), Gebühren für eine „Verifizierung“ oder Freischaltung, Transport- oder Zollkosten, die du vorstrecken sollst, Fragen nach Kartendaten, Bankzugang oder SMS-Codes, Überzahlung mit Bitte um Rücküberweisung, und jeder fremde Link zusammen mit einer weiteren Auffälligkeit.
+* 🟡 **Gelb (Hinweis, abschaltbar):** „Geld erhalten oder freigeben“, Abholung durch Kurier oder Spedition, „schau in deine E-Mails“, angeblicher „Kundenservice“, „Zahlung fehlgeschlagen“, QR-Codes allgemein, Wechsel zu WhatsApp oder Telegram, Links auf fremde Seiten.
 * 🙈 **Ausblenden:** Jede Warnung lässt sich bis zum Neuladen wegklicken.
 * 🎯 **Nur fremde Nachrichten:** Geprüft wird, was dein Gegenüber schreibt, nicht deine eigenen Nachrichten und nicht die Sicherheitshinweise von Kleinanzeigen.
 * 🔒 **Ohne Anfragen:** Das Modul liest nur, was auf der Seite steht. Es lädt nichts nach und schickt nichts weg.

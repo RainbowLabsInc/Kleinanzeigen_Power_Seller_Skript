@@ -15,7 +15,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION = '0.5.0';
+const VERSION = '0.5.1';
 const OUT = 'powerseller.user.js';
 const REPO = 'https://github.com/RainbowLabsInc/Kleinanzeigen_Power_Seller_Skript';
 
@@ -33,7 +33,7 @@ const MODULES = [
         id: 'warnung',
         file: 'src/warnung.js',
         label: 'Betrugswarnung',
-        description: 'Markiert Nachrichten mit typischen Maschen: falsche Bezahl- und Versandlinks, „Geld freigeben“, Kurier, Codes, Überzahlung.',
+        description: 'Markiert Nachrichten mit typischen Maschen: falsche Bezahl- und Versandlinks, QR-Codes, „Geld freigeben“, Verifizierungsgebühr, Kurier, Codes, Überzahlung.',
     },
     {
         id: 'anzeigen',

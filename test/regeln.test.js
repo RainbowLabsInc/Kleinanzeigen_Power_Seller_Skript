@@ -26,6 +26,21 @@ const cases = [
     ['Sendungsverfolgung: https://www.dhl.de/de/privatkunden.html', 'hinweis', ['link']],
     ['Link: https://xn--kleinanzeign-xyz.com/pay', 'hoch', ['link']],
     ['Kontakt per WhatsApp, Bezahlung hier: zahlung-schnell.top', 'hoch', ['extern', 'link']],
+    // Ergänzt 10/2026
+    ['Ich habe über Sicher bezahlen gezahlt. Scanne bitte den QR-Code, um die Zahlung zu bestätigen.', 'hoch', ['qr-zahlung']],
+    ['Hier der QR-Code für den Geldempfang', 'hoch', ['qr-zahlung']],
+    ['Kannst du mir den QR-Code fürs DHL-Etikett schicken?', 'hinweis', ['qr']],
+    ['Für die Verifizierung deines Kontos musst du einmalig 50 Euro überweisen.', 'hoch', ['verifizierung']],
+    ['Es fällt nur eine kleine Freischaltgebühr an.', 'hoch', ['verifizierung']],
+    ['Die Spedition holt ab, die Transportkosten musst du bitte vorstrecken, bekommst du zurück.', 'hoch', ['vorstrecken', 'kurier']],
+    ['Schau bitte in deine E-Mails, da ist die Zahlungsbestätigung.', 'hinweis', ['email']],
+    ['Der Kundenservice hat mir gesagt, du musst die Zahlung bestätigen.', 'hinweis', ['support', 'geld']],
+    ['Die Zahlung ist leider fehlgeschlagen, bitte gib deine Daten hier ein: kleinanzeigen-checkout.com/pay', 'hoch', ['fehlgeschlagen', 'link']],
+    // Harmlos, darf nicht anschlagen
+    ['Die Versandkosten übernehme ich gern.', null, []],
+    ['Ich schaue morgen in meine E-Mails und melde mich.', null, []],
+    ['Kann ich das Gerät vor Ort prüfen, bevor ich zahle?', null, []],
+    ['Bezahlung bar bei Abholung, passt Samstag?', null, []],
 ];
 
 let failed = 0;
